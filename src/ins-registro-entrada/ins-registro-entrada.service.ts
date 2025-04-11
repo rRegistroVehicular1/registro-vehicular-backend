@@ -177,9 +177,9 @@ export class InsRegistroEntradaService {
 
       const fechaArray = row[0][0];
       const partesFecha = fechaArray.split(',')[0].split('/');
-      const dia = partesFecha[0];
-      const mes = partesFecha[1];
-      const año = partesFecha[2].slice(-2);
+      const dia = partesFecha[0].padStart(2, '0');
+      const mes = partesFecha[1].padStart(2, '0');
+      const año = partesFecha[2];
       const fecha = `${mes}-${dia}-${año}`;
 
       const placa = row[0][1];
@@ -490,7 +490,8 @@ export class InsRegistroEntradaService {
       const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetrev3);
       const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
       //const fechaSinGuiones = nameText.fecha.replace(/-/g, '').replace(', ', '').replace(':', '').slice(4, 6) + nameText.fecha.slice(6, 8) + nameText.fecha.slice(0, 4);
-      const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
+      //const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
+      const fechaSinGuiones = mes + dia + año;
       const originalname = `${fechaSinGuiones}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;
 
       await this.uploadFileToDrive({
