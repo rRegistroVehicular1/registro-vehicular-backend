@@ -323,7 +323,7 @@ export class InsRegistroEntradaService {
       const revisionCuñas = row[0][185];
 
       const observacionGeneralDatos = row[0][186];
-      const odometroEntrada = row[0][189];
+      const odometroEntrada = row[0][190];
 
       const requests = [
 
