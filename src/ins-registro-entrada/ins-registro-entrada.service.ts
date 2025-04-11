@@ -192,7 +192,7 @@ export class InsRegistroEntradaService {
       const sucursal = row[0][3];
       const tipoVehiculo = row[0][4];
       const odometro = row[0][5];
-      const horas = row[0].slice(-2);
+      const horas = row[0]; //.slice(-2);
       const HoraSalida = row[0][188]; //GF
       const HoraEntrada = row[0][189]; //GG
 
