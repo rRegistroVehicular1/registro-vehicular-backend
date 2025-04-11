@@ -180,7 +180,7 @@ export class InsRegistroEntradaService {
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
       const año = partesFecha[2].length === 2 ? `20${partesFecha[2]}` : partesFecha[2]; // Asegura año con 4 dígitos
-      const fecha = `${mes}-${dia}-${año.slice(-2)}`; // Mantiene formato MM-DD-AA para otros usos
+      const fecha = `${mes}-${dia}-${año}`; // Mantiene formato MM-DD-AAAA para otros usos
 
       const placa = row[0][1];
       const nombreConductor = row[0][2];
@@ -493,7 +493,7 @@ export class InsRegistroEntradaService {
       //const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
       //const fechaSinGuiones = mes + dia + año;
       // Asegurar año de 4 dígitos (solución definitiva)
-      const añoCompleto = año.length === 2 ? `20${año}` : año;
+      const añoCompleto = año; // Ya está en 4 dígitos desde el paso anterior
       const fechaFormatoPDF = `${mes}${dia}${añoCompleto}`; // Esto dará "04112025"
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;
 
