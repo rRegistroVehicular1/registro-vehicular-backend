@@ -179,8 +179,8 @@ export class InsRegistroEntradaService {
       const partesFecha = fechaArray.split(',')[0].split('/');
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
-      const año = partesFecha[2];
-      const fecha = `${mes}-${dia}-${año}`;
+      const año = partesFecha[2].length === 2 ? `20${partesFecha[2]}` : partesFecha[2]; // Asegura año con 4 dígitos
+      const fecha = `${mes}-${dia}-${año.slice(-2)}`; // Mantiene formato MM-DD-AA para otros usos
 
       const placa = row[0][1];
       const nombreConductor = row[0][2];
@@ -491,8 +491,9 @@ export class InsRegistroEntradaService {
       const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
       //const fechaSinGuiones = nameText.fecha.replace(/-/g, '').replace(', ', '').replace(':', '').slice(4, 6) + nameText.fecha.slice(6, 8) + nameText.fecha.slice(0, 4);
       //const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
-      const fechaSinGuiones = mes + dia + año;
-      const originalname = `${fechaSinGuiones}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;
+      //const fechaSinGuiones = mes + dia + año;
+      const fechaFormatoPDF = `${mes}${dia}${año}`; // Formato MMDDAAAA sin guiones
+      const originalname = `${fechaFormatoPDF}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;
 
       await this.uploadFileToDrive({
         originalname,
