@@ -183,9 +183,9 @@ export class InsRegistroEntradaService {
       const fecha = `${mes}-${dia}-${año}`; // Mantiene formato MM-DD-AAAA para otros usos*/
 
       const fechaFormateada = fecha.replace(/-/g, '');
-const fechaFormatoPDF = fechaFormateada.slice(2, 4) + // Día
-                        fechaFormateada.slice(0, 2) + // Mes
-                        fechaFormateada.slice(4, 8);   // Año (4 dígitos)
+      const fechaFormatoPDF = fechaFormateada.slice(2, 4) + // Día
+                              fechaFormateada.slice(0, 2) + // Mes
+                              fechaFormateada.slice(4, 8);   // Año (4 dígitos)
       
       const placa = row[0][1];
       const nombreConductor = row[0][2];
