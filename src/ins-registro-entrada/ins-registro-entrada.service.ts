@@ -492,7 +492,9 @@ export class InsRegistroEntradaService {
       //const fechaSinGuiones = nameText.fecha.replace(/-/g, '').replace(', ', '').replace(':', '').slice(4, 6) + nameText.fecha.slice(6, 8) + nameText.fecha.slice(0, 4);
       //const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
       //const fechaSinGuiones = mes + dia + año;
-      const fechaFormatoPDF = `${mes}${dia}${año}`; // Formato MMDDAAAA sin guiones
+      // Asegurar año de 4 dígitos (solución definitiva)
+      const añoCompleto = año.length === 2 ? `20${año}` : año;
+      const fechaFormatoPDF = `${mes}${dia}${añoCompleto}`; // Esto dará "04112025"
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;
 
       await this.uploadFileToDrive({
