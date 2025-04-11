@@ -181,17 +181,11 @@ export class InsRegistroEntradaService {
       const mes = partesFecha[1].padStart(2, '0');
       const año = partesFecha[2].length === 2 ? `20${partesFecha[2]}` : partesFecha[2]; // Asegura año con 4 dígitos
       const fecha = `${mes}-${dia}-${año}`; // Mantiene formato MM-DD-AAAA para otros usos*/
-      // 1. Obtener y limpiar la fecha
-      
-      const fechaCompleta = row[0][0].toString().trim();
-      const [fechaParte, horaParte] = fechaCompleta.split(',').map(s => s.trim());
-      const [diaInput, mesInput, añoInput] = fechaParte.split(/[\/\-\.]/); // Admite varios separadores
-      
-      // 2. Formatear componentes (manteniendo tus variables originales)
-      const dia = diaInput.padStart(2, '0');
-      const mes = mesInput.padStart(2, '0');
-      const año = añoInput.padStart(4, '20'); // Convierte "25" → "2025"
-      const fecha = `${mes}-${dia}-${año}`; // Mantiene tu formato original MM-DD-AAAA para otros usos
+
+      const fechaFormateada = fecha.replace(/-/g, '');
+const fechaFormatoPDF = fechaFormateada.slice(2, 4) + // Día
+                        fechaFormateada.slice(0, 2) + // Mes
+                        fechaFormateada.slice(4, 8);   // Año (4 dígitos)
       
       const placa = row[0][1];
       const nombreConductor = row[0][2];
@@ -499,7 +493,8 @@ export class InsRegistroEntradaService {
       const nameText = { fecha, placa, nombreConductor, sucursal };
 
       const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetrev3);
-      const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
+      //const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
+      const sucursal1 = sucursal.match(/\((.*?)\)/)?.[1]?.trim() || 'ND';
       
       //const fechaSinGuiones = nameText.fecha.replace(/-/g, '').replace(', ', '').replace(':', '').slice(4, 6) + nameText.fecha.slice(6, 8) + nameText.fecha.slice(0, 4);
       //const fechaSinGuiones = nameText.fecha.slice(5, 7) + nameText.fecha.slice(8, 10) + nameText.fecha.slice(0, 4);
@@ -509,7 +504,7 @@ export class InsRegistroEntradaService {
       const fechaFormatoPDF = `${mes}${dia}${añoCompleto}`; // Esto dará "04112025"
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${nameText.placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}`;*/
 
-      const fechaFormatoPDF = `${mes}${dia}${año}`; // Nuevo formato MMDDAAAA
+      //const fechaFormatoPDF = `${mes}${dia}${año}`; // Nuevo formato MMDDAAAA
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}.pdf`;
       
       await this.uploadFileToDrive({
