@@ -175,7 +175,8 @@ export class InsRegistroEntradaService {
       const row = response.data.values;
       // console.log(JSON.stringify(row, null, 2));
 
-     /*const fechaArray = row[0][0];
+      //Obtener la fecha del primer campo de la fila
+      const fechaArray = row[0][0];
       const partesFecha = fechaArray.split(',')[0].split('/');
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
