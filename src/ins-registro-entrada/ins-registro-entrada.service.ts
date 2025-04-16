@@ -178,15 +178,18 @@ export class InsRegistroEntradaService {
       //Obtener la fecha del primer campo de la fila
       const fechaArray = row[0][0];
       const partesFecha = fechaArray.split(',')[0].split('/');
+
+      /Asegurar formato de 2 digitos y año de 4 digitos
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
       const año = partesFecha[2].length === 2 ? `20${partesFecha[2]}` : partesFecha[2]; // Asegura año con 4 dígitos
-      const fecha = `${mes}-${dia}-${año}`; // Mantiene formato MM-DD-AAAA para otros usos*/
+      
+      const fechaFormatoPDF = `${mes}${dia}${año}`; // Mantiene formato MM-DD-AAAA para otros usos*/
 
-      const fechaFormateada = fecha.replace(/-/g, '');
+      /*const fechaFormateada = fecha.replace(/-/g, '');
       const fechaFormatoPDF = fechaFormateada.slice(2, 4) + // Día
                               fechaFormateada.slice(0, 2) + // Mes
-                              fechaFormateada.slice(4, 8);   // Año (4 dígitos)
+                              fechaFormateada.slice(4, 8);   // Año (4 dígitos)*/
       
       const placa = row[0][1];
       const nombreConductor = row[0][2];
