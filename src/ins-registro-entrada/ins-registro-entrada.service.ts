@@ -177,19 +177,28 @@ export class InsRegistroEntradaService {
 
       //Obtener la fecha del primer campo de la fila
       const fechaArray = row[0][0];
-      const partesFecha = fechaArray.split(',')[0].split('/');
+      const fechaPartes = fechaArray.split(',')[0].trim(); // Eliminar espacios alrededor
+      const partesFecha = fechaPartes.split('/').map(part => part.trim());
 
-      /Asegurar formato de 2 digitos y año de 4 digitos
+      // Validar que tengamos día, mes y año
+      if (partesFecha.length !== 3) {
+        throw new Error(`Formato de fecha inválido: ${fechaArray}`);
+      }
+      
+      // Asegurar formato de 2 dígitos para día y mes, y 4 dígitos para año
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
-      const año = partesFecha[2].length === 2 ? `20${partesFecha[2]}` : partesFecha[2]; // Asegura año con 4 dígitos
+      let año = partesFecha[2];
       
-      const fechaFormatoPDF = `${mes}${dia}${año}`; // Mantiene formato MMDDAAAA para otros usos*/
-
-      /*const fechaFormateada = fecha.replace(/-/g, '');
-      const fechaFormatoPDF = fechaFormateada.slice(2, 4) + // Día
-                              fechaFormateada.slice(0, 2) + // Mes
-                              fechaFormateada.slice(4, 8);   // Año (4 dígitos)*/
+      // Asegurar que el año tenga 4 dígitos
+      if (año.length === 2) {
+        // Asumimos años 20XX si solo tenemos 2 dígitos
+        año = `20${año}`;
+      } else if (año.length !== 4) {
+        throw new Error(`Formato de año inválido: ${año}`);
+      }
+      
+      const fechaFormatoPDF = `${mes}${dia}${año}`; // Formato MMDDAAAA
       
       const placa = row[0][1];
       const nombreConductor = row[0][2];
