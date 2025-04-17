@@ -346,7 +346,7 @@ export class InsRegistroEntradaService {
       const requests = [
 
         { range: 'Hoja1!C6', values: [[nuevoNumero]] },
-        { range: 'Hoja1!C10', values: [[fecha]] },
+        { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
         { range: 'Hoja1!I9', values: [[placa]] },
         { range: 'Hoja1!D9', values: [[nombreConductor]] },
         { range: 'Hoja1!C4', values: [[sucursal]] },
@@ -485,7 +485,7 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!G84', values: [[revisionGato]] },
         { range: 'Hoja1!G85', values: [[revisionCarretilla]] },
         { range: 'Hoja1!G86', values: [[revisionCuñas]] },
-        { range: 'Hoja1!C87', values: [[observacionGeneralDatos]] },
+        { range: 'Hoja1!B88', values: [[observacionGeneralDatos]] },
 
       ];
 
