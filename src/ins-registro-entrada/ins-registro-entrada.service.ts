@@ -177,28 +177,20 @@ export class InsRegistroEntradaService {
 
       //Obtener la fecha del primer campo de la fila
       const fechaArray = row[0][0];
-      const fechaPartes = fechaArray.split(',')[0].trim(); // Eliminar espacios alrededor
+      const fechaPartes = fechaArray.split(',')[0].trim();
       const partesFecha = fechaPartes.split('/').map(part => part.trim());
-
-      // Validar que tengamos día, mes y año
-      if (partesFecha.length !== 3) {
-        throw new Error(`Formato de fecha inválido: ${fechaArray}`);
-      }
-      
-      // Asegurar formato de 2 dígitos para día y mes, y 4 dígitos para año
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
       let año = partesFecha[2];
       
-      // Asegurar que el año tenga 4 dígitos
+      // Asegura año de 4 dígitos
       if (año.length === 2) {
-        // Asumimos años 20XX si solo tenemos 2 dígitos
-        año = `20${año}`;
+          año = `20${año}`;
       } else if (año.length !== 4) {
-        throw new Error(`Formato de año inválido: ${año}`);
+          throw new Error(`Formato de año inválido: ${año}`);
       }
       
-      const fechaFormatoPDF = `${mes}${dia}${año}`; // Formato MMDDAAAA
+      const fechaFormatoPDF = `${mes}${dia}${año}`; // MMDDAAAA
       
       const placa = row[0][1];
       const nombreConductor = row[0][2];
@@ -503,7 +495,7 @@ export class InsRegistroEntradaService {
         },
       });
 
-      const nameText = { fecha, placa, nombreConductor, sucursal };
+      const nameText = { fechaFormatoPDF, placa, nombreConductor, sucursal };
 
       const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetrev3);
       //const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
