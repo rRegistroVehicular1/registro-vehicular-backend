@@ -12,7 +12,7 @@
       "dest": "src/main.ts",
       "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       "headers": {
-        "Access-Control-Allow-Origin": "http://localhost:5173, https://registro-vehicular-bac.vercel1.app",
+        "Access-Control-Allow-Origin": "http://localhost:5173, https://registro-vehicular-bac.vercel.app",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization"
       }
