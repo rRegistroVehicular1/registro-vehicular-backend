@@ -38,6 +38,14 @@ export class InsRegistroSalidaService {
     documentacion: any[],
     dasCarroceria: any[],
   ) {
+
+    // Validar cantidad de llantas según tipo
+    const llantasEsperadas = tipoVehiculo === 'camion' ? 6 : 4;
+    const llantasRecibidas = llantasParte1.length + llantasParte2.length;
+    
+    if (llantasRecibidas !== llantasEsperadas) {
+      throw new Error(`Cantidad incorrecta de llantas para ${tipoVehiculo}`);
+    }
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     console.log(spreadsheetId);
 
@@ -207,6 +215,8 @@ export class InsRegistroSalidaService {
     conductor,
     sucursal,
     tipoVehiculo,
+    llantasParte1,
+    llantasParte2,
     odometroSalida,
     estadoSalida,
     observacionGeneralLlantas,
@@ -214,6 +224,9 @@ export class InsRegistroSalidaService {
     observacionGeneralVisuales,
     ...arrays
   }: any) {
+
+    const isCamion = tipoVehiculo === 'camion';
+    
     const {
       llanta1, llanta2, llanta3, llanta4, llanta5,
       llanta6, llanta7, llanta8, llanta9, llanta10,
