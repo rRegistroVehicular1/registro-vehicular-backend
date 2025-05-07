@@ -151,7 +151,12 @@ export class FallaService {
             const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetId3);
 
             const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
-            const fechaSinGuiones = nameText.fecha.replace(/-/g, '').replace(', ', '').replace(':', '').slice(4, 6) + nameText.fecha.slice(6, 8) + nameText.fecha.slice(0, 4);
+            const fechaFormateada = new Date(nameText.fecha);
+            const mes = String(fechaFormateada.getMonth() + 1).padStart(2, '0'); // MM
+            const dia = String(fechaFormateada.getDate()).padStart(2, '0'); // DD
+            const año = fechaFormateada.getFullYear(); // AAAA
+            const fechaSinGuiones = `${mes}${dia}${año}`;
+
             const originalname = `${fechaSinGuiones}-${sucursal1}-${nameText.placa}- R07-PT-19-Reporte de Falla-${nuevoNumero}`;
 
             await this.uploadFileToDrive({
