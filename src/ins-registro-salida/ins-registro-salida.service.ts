@@ -19,6 +19,31 @@ export class InsRegistroSalidaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth })
   }
 
+  private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
+    const todasLlantas = [...llantasParte1, ...llantasParte2];
+    const idsLlantas = todasLlantas.map(llanta => llanta.id);
+
+    // Validación para camiones
+    if (tipoVehiculo === 'camion') {
+      const llantasRequeridas = [1, 2, 5, 6, 7, 8];
+      const faltantes = llantasRequeridas.filter(id => !idsLlantas.includes(id));
+      
+      if (faltantes.length > 0) {
+        throw new Error(`Para camión deben incluirse todas las llantas. Faltan: ${faltantes.join(', ')}`);
+      }
+    } 
+    // Validación para otros vehículos
+    else {
+      const llantasPermitidas = [1, 2, 5, 7];
+      const invalidas = idsLlantas.filter(id => !llantasPermitidas.includes(id));
+      
+      if (invalidas.length > 0) {
+        throw new Error(`Tipo de vehículo ${tipoVehiculo} no debe tener llantas con IDs: ${invalidas.join(', ')}`);
+      }
+    }
+  }
+
+
   async handleData(
     placa: string,
     conductor: string,
@@ -42,6 +67,9 @@ export class InsRegistroSalidaService {
     console.log(spreadsheetId);
 
     try {
+      // 1. Primero validamos las llantas (nueva línea a agregar)
+      this.validateTires(tipoVehiculo, llantasParte1, llantasParte2);
+      
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
         year: 'numeric',
@@ -124,6 +152,7 @@ export class InsRegistroSalidaService {
       console.log('Datos enviados correctamente a Google Sheets.');
       return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
     } catch (error) {
+      console.error('Error en validación de llantas:', error);
       console.error('Error al procesar datos o subir el archivo:', error.response?.data || error.message || error);
       throw new Error('Error al procesar datos o subir el archivo');
     }
@@ -225,7 +254,7 @@ export class InsRegistroSalidaService {
       documentacion5, documentacion6, documentacion7, documentacion8,
       dasCarroceria1, dasCarroceria2, dasCarroceria3, dasCarroceria4,
     } = arrays;
-
+    
     return [
       [
         fechaHoraActual,
