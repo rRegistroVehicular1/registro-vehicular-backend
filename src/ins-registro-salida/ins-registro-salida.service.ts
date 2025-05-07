@@ -21,26 +21,27 @@ export class InsRegistroSalidaService {
 
   private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
     const todasLlantas = [...llantasParte1, ...llantasParte2];
-    const idsLlantas = todasLlantas.map(llanta => llanta.id);
+
+    const llantasValidas = todasLlantas.filter(llanta => llanta && llanta.id);
 
     // Validación para camiones
     if (tipoVehiculo === 'camion') {
-      const llantasRequeridas = [1, 2, 5, 6, 7, 8];
-      const faltantes = llantasRequeridas.filter(id => !idsLlantas.includes(id));
+      const idsPermitidos = [1, 2, 5, 6, 7, 8];
+      const idsInvalidos = llantasValidas.map(llanta => llanta.id)
+                            .filter(id => !idsPermitidos.includes(id));
       
-      if (faltantes.length > 0) {
-        throw new Error(`Para camión deben incluirse todas las llantas. Faltan: ${faltantes.join(', ')}`);
+      if (idsInvalidos.length > 0) {
+        throw new Error(`Para camión se permiten solo llantas con IDs: ${idsPermitidos.join(', ')}`);
       }
-    } 
-    // Validación para otros vehículos
-    else {
-      const llantasPermitidas = [1, 2, 5, 7];
-      const invalidas = idsLlantas.filter(id => !llantasPermitidas.includes(id));
+    } else {
+      const idsPermitidos = [1, 2, 5, 7];
+      const idsInvalidos = llantasValidas.map(llanta => llanta.id)
+                            .filter(id => !idsPermitidos.includes(id));
       
-      if (invalidas.length > 0) {
-        throw new Error(`Tipo de vehículo ${tipoVehiculo} no debe tener llantas con IDs: ${invalidas.join(', ')}`);
+      if (idsInvalidos.length > 0) {
+        throw new Error(`Para ${tipoVehiculo} se permiten solo llantas con IDs: ${idsPermitidos.join(', ')}`);
       }
-    }
+  }
   }
 
 
