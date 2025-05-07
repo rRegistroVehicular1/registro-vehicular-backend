@@ -198,8 +198,8 @@ export class InsRegistroEntradaService {
       const tipoVehiculo = row[0][4];
       const odometro = row[0][5];
       const horas = row[0]; //.slice(-2);
-      const HoraSalida = row[0][188]; //GF
-      const HoraEntrada = row[0][189]; //GG
+      const HoraSalida = row[0][189]; //GF
+      const HoraEntrada = row[0][190]; //GG
 
       const nuevoNumero = await this.generarNumeroConsecutivo(sucursal);
 
@@ -333,7 +333,7 @@ export class InsRegistroEntradaService {
       const revisionCuñas = row[0][185];
 
       const observacionGeneralDatos = row[0][186];
-      const odometroEntrada = row[0][190];
+      const odometroEntrada = row[0][191];
 
       const requests = [
 
