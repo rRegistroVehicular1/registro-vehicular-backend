@@ -19,29 +19,18 @@ export class InsRegistroSalidaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth })
   }
 
+  // Modifica la función validateTires:
   private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
+    const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
+    
     const todasLlantas = [...llantasParte1, ...llantasParte2];
-
-    const llantasValidas = todasLlantas.filter(llanta => llanta && llanta.id);
-
-    // Validación para camiones
-    if (tipoVehiculo === 'camion') {
-      const idsPermitidos = [1, 2, 5, 6, 7, 8];
-      const idsInvalidos = llantasValidas.map(llanta => llanta.id)
-                            .filter(id => !idsPermitidos.includes(id));
-      
-      if (idsInvalidos.length > 0) {
-        throw new Error(`Para camión se permiten solo llantas con IDs: ${idsPermitidos.join(', ')}`);
-      }
-    } else {
-      const idsPermitidos = [1, 2, 5, 7];
-      const idsInvalidos = llantasValidas.map(llanta => llanta.id)
-                            .filter(id => !idsPermitidos.includes(id));
-      
-      if (idsInvalidos.length > 0) {
-        throw new Error(`Para ${tipoVehiculo} se permiten solo llantas con IDs: ${idsPermitidos.join(', ')}`);
-      }
-  }
+    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
+  
+    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+    
+    if (idsInvalidos.length > 0) {
+      throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
+    }
   }
 
 
