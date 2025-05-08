@@ -24,7 +24,13 @@ export class InsRegistroEntradaService {
     odometro: string,
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    const placa = await this.getPlacaFromRowIndex(lastPlacaInfo);
 
+    const lastOdometro = await this.getLastOdometro(placa);
+      if (lastOdometro !== null && parseInt(odometro) <= lastOdometro) {
+        throw new Error(`VALIDACION_ODOMETRO: El odómetro (${odometro}) debe ser mayor al último registro (${lastOdometro})`);
+      }
+    
     try {
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
@@ -99,7 +105,7 @@ export class InsRegistroEntradaService {
       throw new Error('Error al procesar datos o subir el archivo');
     }
   }
-
+  
   private processJSON(data: any): any {
     if (typeof data === 'string') {
       try {
@@ -112,6 +118,30 @@ export class InsRegistroEntradaService {
     return data;
   }
 
+  async getLastOdometro(placa: string): Promise<number | null> {
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'Hoja 1!B2:GH', // B: placa, GH: odometroEntrada
+      });
+  
+      const rows = response.data.values || [];
+      const entries = rows.filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase());
+      
+      if (entries.length === 0) return null;
+  
+      // Ordenar por fecha (columna 0) descendente
+      entries.sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+  
+      // Retornar el último odometroEntrada (columna GH)
+      return entries[0][189] ? parseInt(entries[0][189]) : null;
+    } catch (error) {
+      console.error('Error al obtener último odómetro:', error);
+      return null;
+    }
+  }
+  
   private initializeArrays({
     revisiones
   }: any) {
@@ -666,6 +696,15 @@ export class InsRegistroEntradaService {
     };
 
     return transporter.sendMail(mailOptions);
+  }
+
+  private async getPlacaFromRowIndex(rowIndex: string): Promise<string> {
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    const response = await this.sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `Hoja 1!B${rowIndex}`, // Columna B = placa
+    });
+    return response.data.values[0][0];
   }
 
 }
