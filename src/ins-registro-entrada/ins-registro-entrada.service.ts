@@ -198,8 +198,8 @@ export class InsRegistroEntradaService {
       const tipoVehiculo = row[0][4];
       const odometro = row[0][5];
       const horas = row[0]; //.slice(-2);
-      const HoraSalida = row[0][189]; //GF
-      const HoraEntrada = row[0][190]; //GG
+      const HoraSalida = row[0][186]; //GF
+      const HoraEntrada = row[0][187]; //GG
 
       const nuevoNumero = await this.generarNumeroConsecutivo(sucursal);
 
@@ -253,87 +253,87 @@ export class InsRegistroEntradaService {
       const llanta10Obs3 = row[0][55];
       const llanta10Obs4 = row[0][56];
 
-      const nivel1No = row[0][60];
-      const nivel1Si = row[0][61];
+      const nivel1No = row[0][59];
+      const nivel1Si = row[0][60];
 
-      const nivel2No = row[0][64];
-      const nivel2Si = row[0][65];
+      const nivel2No = row[0][63];
+      const nivel2Si = row[0][64];
 
-      const nivel3No = row[0][68];
-      const nivel3Si = row[0][69];
+      const nivel3No = row[0][67];
+      const nivel3Si = row[0][68];
 
-      const nivel4No = row[0][72];
-      const nivel4Si = row[0][73];
-      const observacionFluido = row[0][74];
+      const nivel4No = row[0][71];
+      const nivel4Si = row[0][72];
+      const observacionFluido = row[0][73];
 
-      const Inspección1 = row[0][77];
-      const Inspección2 = row[0][79];
-      const Inspección3 = row[0][81];
-      const Comprobación4 = row[0][83];
-      const observacionVisuales = row[0][84];
+      const Inspección1 = row[0][76];
+      const Inspección2 = row[0][78];
+      const Inspección3 = row[0][80];
+      const Comprobación4 = row[0][82];
+      const observacionVisuales = row[0][83];
 
-      const lucesMedias = row[0][87];
-      const lucesRetroceso = row[0][89];
-      const lucesDerechas = row[0][91];
-      const lucesIzquierdas = row[0][93];
-      const lucesIntermitentes = row[0][95];
-      const lucesStops = row[0][97];
-      const lucesCabina = row[0][99];
-      const lucesEscolta = row[0][101];
+      const lucesMedias = row[0][86];
+      const lucesRetroceso = row[0][88];
+      const lucesDerechas = row[0][90];
+      const lucesIzquierdas = row[0][92];
+      const lucesIntermitentes = row[0][94];
+      const lucesStops = row[0][96];
+      const lucesCabina = row[0][98];
+      const lucesEscolta = row[0][100];
 
-      const primerosAuxilios = row[0][104];
-      const conos = row[0][106];
-      const triangulos = row[0][108];
-      const cuñas = row[0][110];
-      const extintor = row[0][112];
-      const llantaRepuesto = row[0][114];
-      const gato = row[0][116];
-      const carretilla = row[0][118];
+      const primerosAuxilios = row[0][103];
+      const conos = row[0][105];
+      const triangulos = row[0][107];
+      const cuñas = row[0][109];
+      const extintor = row[0][111];
+      const llantaRepuesto = row[0][113];
+      const gato = row[0][115];
+      const carretilla = row[0][117];
 
-      const permisoBimensual = row[0][121];
-      const permisoAnual = row[0][123];
-      const polizaSeguro = row[0][125];
-      const tarjetaPesos = row[0][127];
-      const licenciaConducir = row[0][129];
-      const hojaSeguridad = row[0][131];
-      const planEmergencia = row[0][133];
-      const registroVehicular = row[0][135];
+      const permisoBimensual = row[0][120];
+      const permisoAnual = row[0][122];
+      const polizaSeguro = row[0][124];
+      const tarjetaPesos = row[0][126];
+      const licenciaConducir = row[0][128];
+      const hojaSeguridad = row[0][130];
+      const planEmergencia = row[0][132];
+      const registroVehicular = row[0][134];
 
-      const dano1Obs1 = row[0][139];
-      const dano1Obs2 = row[0][140];
-      const dano1Obs3 = row[0][141];
-      const dano1Obs4 = row[0][142];
+      const dano1Obs1 = row[0][138];
+      const dano1Obs2 = row[0][139];
+      const dano1Obs3 = row[0][140];
+      const dano1Obs4 = row[0][141];
 
-      const dano2Obs1 = row[0][145];
-      const dano2Obs2 = row[0][146];
-      const dano2Obs3 = row[0][147];
-      const dano2Obs4 = row[0][148];
+      const dano2Obs1 = row[0][144];
+      const dano2Obs2 = row[0][145];
+      const dano2Obs3 = row[0][146];
+      const dano2Obs4 = row[0][147];
 
-      const dano3Obs1 = row[0][151];
-      const dano3Obs2 = row[0][152];
-      const dano3Obs3 = row[0][153];
-      const dano3Obs4 = row[0][154];
+      const dano3Obs1 = row[0][150];
+      const dano3Obs2 = row[0][151];
+      const dano3Obs3 = row[0][152];
+      const dano3Obs4 = row[0][153];
 
-      const dano4Obs1 = row[0][157];
-      const dano4Obs2 = row[0][158];
-      const dano4Obs3 = row[0][159];
-      const dano4Obs4 = row[0][160];
+      const dano4Obs1 = row[0][156];
+      const dano4Obs2 = row[0][157];
+      const dano4Obs3 = row[0][158];
+      const dano4Obs4 = row[0][159];
 
-      const revisionGolpes = row[0][163];
-      const revisionLlave = row[0][165];
-      const revisionBasura = row[0][167];
-      const revisionLuces = row[0][169];
-      const maletinPrimerosAuxilios = row[0][171];
-      const revisionConos = row[0][173];
-      const revisionTriangulos = row[0][175];
-      const revisionExtintor = row[0][177];
-      const revisionLlantaRepuesto = row[0][179];
-      const revisionGato = row[0][181];
-      const revisionCarretilla = row[0][183];
-      const revisionCuñas = row[0][185];
+      const revisionGolpes = row[0][162];
+      const revisionLlave = row[0][164];
+      const revisionBasura = row[0][166];
+      const revisionLuces = row[0][168];
+      const maletinPrimerosAuxilios = row[0][170];
+      const revisionConos = row[0][172];
+      const revisionTriangulos = row[0][174];
+      const revisionExtintor = row[0][176];
+      const revisionLlantaRepuesto = row[0][178];
+      const revisionGato = row[0][180];
+      const revisionCarretilla = row[0][182];
+      const revisionCuñas = row[0][184];
 
-      const observacionGeneralDatos = row[0][186];
-      const odometroEntrada = row[0][191];
+      const observacionGeneralDatos = row[0][185];
+      const odometroEntrada = row[0][188];
 
       const requests = [
 
