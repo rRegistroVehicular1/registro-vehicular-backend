@@ -17,15 +17,28 @@ export class PlacasService {
 
   async getPlacasFromSheet() {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:C';
+    const range = 'Lista de Placas!C2:C2000';
 
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
       });
+      console.log("Datos crudos de Sheets:", response.data);
 
+      if (!response.data.values) {
+        return [];
+      }
       const rows = response.data.values;
+        .flat()
+        .filter((placa: string | null) => placa && placa.trim() !== "")
+        .filter((placa: string, index: number, self: string[]) => 
+          self.indexOf(placa) === index
+        );
+
+      console.log("Placas procesadas:", placas);
+      return placas;
+      
       if (rows && rows.length) {
         const placas = rows.map((row) => row[0].filter(Boolean));
         return placas;
