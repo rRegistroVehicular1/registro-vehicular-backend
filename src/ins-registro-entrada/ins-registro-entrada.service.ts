@@ -158,15 +158,12 @@ export class InsRegistroEntradaService {
   }
 
   async getRowFromSheet(rowNumber: number) {
-
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const sheetName = 'Hoja 1';
     const range = `${sheetName}!A${rowNumber}:GH${rowNumber}`;
-
     const spreadsheetrev3 = process.env.GOOGLE_R06PT19REVISIONDEVEHICULOSrev3;
 
     try {
-
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
@@ -669,33 +666,60 @@ export class InsRegistroEntradaService {
   }
 
   async getLastOdometro(placa: string): Promise<number> {
+    if (!placa || typeof placa !== 'string') {
+      console.error('Placa no proporcionada o inválida');
+      return 0;
+    }
+
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!B2:GH';
-  
+    const range = 'Hoja 1!A2:GH'; // Asegúrate de incluir todas las columnas necesarias
+
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
       });
-  
+
       const rows = response.data.values || [];
       
+      // Filtrar y procesar registros para la placa específica
       const registrosVehiculo = rows
-        .filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase())
-        .map(row => ({
-          odometro: parseFloat(row[5] || '0'),
-          odometroEntrada: parseFloat(row[190] || '0'),
-          fecha: new Date(row[0].replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, '$3-$2-$1T$4'))
-        }))
+        .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
+        .map(row => {
+          try {
+            const fechaStr = row[0].replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, '$3-$2-$1T$4');
+            return {
+              odometro: parseFloat(row[5] || '0'),
+              odometroEntrada: parseFloat(row[190] || '0'), // Columna GH
+              fecha: new Date(fechaStr)
+            };
+          } catch (error) {
+            console.error('Error al procesar fecha:', error);
+            return null;
+          }
+        })
+        .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-  
-      if (registrosVehiculo.length > 0) {
-        return registrosVehiculo[0].odometroEntrada || registrosVehiculo[0].odometro;
+
+      if (registrosVehiculo.length === 0) {
+        console.log(`No se encontraron registros para la placa ${placa}`);
+        return 0;
       }
-  
-      return 0;
+
+      // Priorizar odometroEntrada si existe, sino usar odometro
+      const ultimoRegistro = registrosVehiculo[0];
+      const resultado = ultimoRegistro.odometroEntrada > 0 
+        ? ultimoRegistro.odometroEntrada 
+        : ultimoRegistro.odometro;
+
+      console.log(`Último odómetro para ${placa}: ${resultado}`);
+      return resultado;
     } catch (error) {
-      console.error('Error al obtener último odómetro:', error);
+      console.error('Error al obtener último odómetro:', {
+        error: error.message,
+        stack: error.stack,
+        response: error.response?.data
+      });
       return 0;
     }
   }
