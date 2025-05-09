@@ -3,6 +3,7 @@ import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { InsRegistroEntradaService } from './ins-registro-entrada.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { BadRequestException } from '@nestjs/common';
 
 @ApiTags('ins-registro-entrada')
 @Controller('ins-registro-entrada')
