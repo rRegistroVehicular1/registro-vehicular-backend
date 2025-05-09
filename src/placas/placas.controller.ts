@@ -12,6 +12,8 @@ export class PlacasController {
   async getData() {
     const data = await this.placasService.getPlacasFromSheet();
     return data;
+  } catch (error) {
+    console.error('Error en controller:', error);
+    return []; // Siempre devuelve array aunque falle
   }
-
 }
