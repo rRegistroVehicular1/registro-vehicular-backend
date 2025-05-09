@@ -15,39 +15,49 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasFromSheet() {
+  async getPlacasFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:C2000';
+    const range = 'Lista de Placas!C2:C';
 
     try {
-      const response = await this.sheets.spreadsheets.values.get({
+      const { data } = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
       });
 
-      console.log("Datos crudos de Sheets:", response.data);
-
-      if (!response.data.values) {
-        console.log("No se encontraron valores en el rango especificado");
+      if (!data.values) {
+        console.warn('No se encontraron datos en el rango especificado');
         return [];
       }
 
-      // Procesamiento correcto de los datos
-      const placas = response.data.values
-        .map(row => row[0]?.trim()) // Extrae solo la columna C
-        .filter(placa => placa && placa !== "") // Filtra valores vacíos
-        .filter((placa, index, self) => self.indexOf(placa) === index); // Elimina duplicados
-
-      console.log("Placas procesadas:", placas);
-      return placas;
-
+      return data.values
+        .map(row => row[0]?.trim())
+        .filter(Boolean)
+        .filter((placa, index, self) => self.indexOf(placa) === index);
+        
     } catch (error) {
-      console.error('Error al obtener las placas:', {
+      console.error('Error crítico:', {
         error: error.message,
-        stack: error.stack,
-        response: error.response?.data
+        sheetId: spreadsheetId,
+        range
       });
-      throw new Error('No se pudo obtener el listado de placas');
+      return []; // Fallback seguro
+    }
+  }
+
+  // (Opcional) Método para diagnóstico
+  async testSheetConnection(): Promise<boolean> {
+    try {
+      const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+      const res = await this.sheets.spreadsheets.get({
+        spreadsheetId,
+        fields: 'sheets.properties.title'
+      });
+      console.log('Hojas disponibles:', res.data.sheets.map(s => s.properties.title));
+      return true;
+    } catch (error) {
+      console.error('Error de conexión:', error);
+      return false;
     }
   }
 }
