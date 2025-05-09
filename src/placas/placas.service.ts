@@ -27,7 +27,7 @@ export class PlacasService {
 
       const rows = response.data.values;
       if (rows && rows.length) {
-        const placas = rows.map((row) => row[0]);
+        const placas = rows.map((row) => row[0].filter(Boolean));
         return placas;
       } else {
         return { message: 'No hay placas disponibles en la hoja.' };
