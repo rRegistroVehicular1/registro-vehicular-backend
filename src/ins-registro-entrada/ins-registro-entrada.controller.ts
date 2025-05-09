@@ -11,19 +11,12 @@ export class InsRegistroEntradaController {
 
   @Post('register')
   @UseInterceptors(FileInterceptor('documento'))
-  async register(@Body() body: any) {
-    try{
-      const {revisiones, observacion, lastPlacaInfo, odometro } = body;
-      const result = await this.insRegistroEntradaService.processRegistroEntrada(revisiones, observacion, lastPlacaInfo, odometro);
-      return result;
-    } catch (error){
-      // Captura específicamente el error de validación
-      if (error.message.startsWith('VALIDACION_ODOMETRO')) {
-        throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-      }
-      throw error;
-    }
-  }
-  
-}
+  async register(
+    @Body() body: any
+  ) {
 
+    const {revisiones, observacion, lastPlacaInfo, odometro } = body;
+    const result = await this.insRegistroEntradaService.processRegistroEntrada(revisiones, observacion, lastPlacaInfo, odometro);
+    return result;
+  }
+}
