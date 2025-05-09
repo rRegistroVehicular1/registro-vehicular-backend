@@ -23,18 +23,15 @@ export class InsRegistroEntradaService {
     lastPlacaInfo: string,
     odometro: string,
   ) {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;  
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+
     try {
-      const placa = await this.getPlacaFromRowIndex(lastPlacaInfo);
-      const lastOdometro = await this.getLastOdometro(placa);
-      if (lastOdometro !== null && parseInt(odometro) <= lastOdometro) {
-        throw new Error(`VALIDACION_ODOMETRO: El odómetro (${odometro}) debe ser mayor al último registro (${lastOdometro})`);
-      }
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
 
       const rowNumber = parseInt(lastPlacaInfo, 10);
+
       const startColumn = 'FG';
       const range = `Hoja 1!${startColumn}${rowNumber}`;
 
@@ -102,7 +99,7 @@ export class InsRegistroEntradaService {
       throw new Error('Error al procesar datos o subir el archivo');
     }
   }
-  
+
   private processJSON(data: any): any {
     if (typeof data === 'string') {
       try {
@@ -115,36 +112,6 @@ export class InsRegistroEntradaService {
     return data;
   }
 
-  private async getPlacaFromRowIndex(rowIndex: string): Promise<string> {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const response = await this.sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `Hoja 1!B${rowIndex}`, // Columna B = placa
-    });
-    return response.data.values[0][0];
-  }
-  
-  async getLastOdometro(placa: string): Promise<number | null> {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    try {
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: 'Hoja 1!B2:GH', // B: placa, GH: odometroEntrada
-      });
-  
-      const rows = response.data.values || [];
-      const entries = rows.filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase());
-      
-      if (entries.length === 0) return null;
-  
-      entries.sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
-      return entries[0][189] ? parseInt(entries[0][189]) : null; // GH = índice 189
-    } catch (error) {
-      console.error('Error al obtener último odómetro:', error);
-      return null;
-    }
-  }
-  
   private initializeArrays({
     revisiones
   }: any) {
@@ -231,8 +198,8 @@ export class InsRegistroEntradaService {
       const tipoVehiculo = row[0][4];
       const odometro = row[0][5];
       const horas = row[0]; //.slice(-2);
-      const HoraSalida = row[0][187]; //GF
-      const HoraEntrada = row[0][188]; //GG
+      const HoraSalida = row[0][188]; //GF
+      const HoraEntrada = row[0][189]; //GG
 
       const nuevoNumero = await this.generarNumeroConsecutivo(sucursal);
 
@@ -366,7 +333,7 @@ export class InsRegistroEntradaService {
       const revisionCuñas = row[0][185];
 
       const observacionGeneralDatos = row[0][186];
-      const odometroEntrada = row[0][189];
+      const odometroEntrada = row[0][190];
 
       const requests = [
 
@@ -697,6 +664,11 @@ export class InsRegistroEntradaService {
         },
       ],
     };
+
+    return transporter.sendMail(mailOptions);
+  }
+
+}
 
     return transporter.sendMail(mailOptions);
   }
