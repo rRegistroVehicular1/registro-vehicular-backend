@@ -31,12 +31,12 @@ export class PlacasService {
       }
 
       return data.values
-        .map(row => row[0]?.trim())
-        .filter(Boolean)
+        .flat()
+        .map(placa => placa?.toString().trim())
+        .filter(placa => placa && placa.length > 0)
         .filter((placa, index, self) => self.indexOf(placa) === index);
-        
     } catch (error) {
-      console.error('Error crítico:', {
+      console.error('Error crítico al cargar placas:', {
         error: error.message,
         sheetId: spreadsheetId,
         range
