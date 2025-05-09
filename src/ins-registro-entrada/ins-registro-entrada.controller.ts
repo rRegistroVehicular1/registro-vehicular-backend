@@ -9,6 +9,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class InsRegistroEntradaController {
   constructor(private readonly insRegistroEntradaService: InsRegistroEntradaService) { }
 
+  @Get('last-odometro')
+  async getLastOdometro(@Query('placa') placa: string) {
+    const lastOdometro = await this.insRegistroEntradaService.getLastOdometro(placa);
+    return { lastOdometro };
+  }
+  
   @Post('register')
   @UseInterceptors(FileInterceptor('documento'))
   async register(
