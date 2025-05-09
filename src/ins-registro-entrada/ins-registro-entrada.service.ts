@@ -668,8 +668,36 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-}
-
-    return transporter.sendMail(mailOptions);
+  async getLastOdometro(placa: string): Promise<number> {
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    const range = 'Hoja 1!B2:GH';
+  
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+      });
+  
+      const rows = response.data.values || [];
+      
+      const registrosVehiculo = rows
+        .filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase())
+        .map(row => ({
+          odometro: parseFloat(row[5] || '0'),
+          odometroEntrada: parseFloat(row[190] || '0'),
+          fecha: new Date(row[0].replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, '$3-$2-$1T$4'))
+        }))
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+  
+      if (registrosVehiculo.length > 0) {
+        return registrosVehiculo[0].odometroEntrada || registrosVehiculo[0].odometro;
+      }
+  
+      return 0;
+    } catch (error) {
+      console.error('Error al obtener último odómetro:', error);
+      return 0;
+    }
   }
+
 }
