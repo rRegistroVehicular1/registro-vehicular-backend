@@ -681,8 +681,25 @@ export class InsRegistroEntradaService {
       });
 
       const rows = response.data.values || [];
-      
-      // Filtrar y procesar registros para la placa específica
+
+      const registrosVehiculo = rows
+        .filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase())
+        .map(row => ({
+          odometro: parseFloat(row[5] || '0'),        // Columna F (odómetro salida)
+          odometroEntrada: parseFloat(row[190] || '0'), // Columna GH (odómetro entrada)
+          fecha: new Date(row[0].replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, '$3-$2-$1T$4'))
+        }))
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+  
+      return registrosVehiculo.length > 0 
+        ? registrosVehiculo[0].odometroEntrada // Devuelve solo el último odometroEntrada
+        : 0;
+    } catch (error) {
+      console.error('Error al obtener último odómetro:', error);
+      return 0;
+    }
+     
+      /* Filtrar y procesar registros para la placa específica
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
@@ -722,6 +739,6 @@ export class InsRegistroEntradaService {
       });
       return 0;
     }
-  }
+  }*/
 
 }
