@@ -24,30 +24,30 @@ export class PlacasService {
         spreadsheetId,
         range,
       });
+
       console.log("Datos crudos de Sheets:", response.data);
 
       if (!response.data.values) {
+        console.log("No se encontraron valores en el rango especificado");
         return [];
       }
-      const rows = response.data.values;
-        .flat()
-        .filter((placa: string | null) => placa && placa.trim() !== "")
-        .filter((placa: string, index: number, self: string[]) => 
-          self.indexOf(placa) === index
-        );
+
+      // Procesamiento correcto de los datos
+      const placas = response.data.values
+        .map(row => row[0]?.trim()) // Extrae solo la columna C
+        .filter(placa => placa && placa !== "") // Filtra valores vacíos
+        .filter((placa, index, self) => self.indexOf(placa) === index); // Elimina duplicados
 
       console.log("Placas procesadas:", placas);
       return placas;
-      
-      if (rows && rows.length) {
-        const placas = rows.map((row) => row[0].filter(Boolean));
-        return placas;
-      } else {
-        return { message: 'No hay placas disponibles en la hoja.' };
-      }
+
     } catch (error) {
-      console.error('Error al obtener las placas de Google Sheets:', error.response?.data || error.message || error);
-      throw new Error('Error al obtener las placas de Google Sheets');
+      console.error('Error al obtener las placas:', {
+        error: error.message,
+        stack: error.stack,
+        response: error.response?.data
+      });
+      throw new Error('No se pudo obtener el listado de placas');
     }
   }
 }
