@@ -666,8 +666,7 @@ export class InsRegistroEntradaService {
   }
 
   async getLastOdometro(placa: string): Promise<number> {
-    if (!placa || typeof placa !== 'string') {
-      console.error('Placa no proporcionada o inválida');
+    if (!placa) 
       return 0;
     }
 
@@ -681,23 +680,41 @@ export class InsRegistroEntradaService {
       });
 
       const rows = response.data.values || [];
+      console.log('Registros encontrados:', rows.length); 
 
       const registrosVehiculo = rows
-        .filter(row => row[1]?.trim().toUpperCase() === placa.trim().toUpperCase())
-        .map(row => ({
-          odometro: parseFloat(row[5] || '0'),        // Columna F (odómetro salida)
-          odometroEntrada: parseFloat(row[190] || '0'), // Columna GH (odómetro entrada)
-          fecha: new Date(row[0].replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, '$3-$2-$1T$4'))
-        }))
-        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-  
-      return registrosVehiculo.length > 0 
-        ? registrosVehiculo[0].odometroEntrada // Devuelve solo el último odometroEntrada
-        : 0;
-    } catch (error) {
-      console.error('Error al obtener último odómetro:', error);
-      return 0;
-    }
+        .filter(row => row && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
+        .map(row => {
+          try{
+            return {
+              odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
+              fecha: new Date(
+                row[0].replace(
+                  /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, 
+                  '$3-$2-$1T$4'
+                )
+              )
+            };
+          } catch (error) {
+            console.error('Error al obtener último odómetro:', error);
+            return null;
+          }
+        })
+        .filter(Boolean) // Elimina registros nulos
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordena por fecha descendente
+
+    console.log('Registros filtrados:', registrosVehiculo); // Debug
+
+    return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+  } catch (error) {
+    console.error('Error detallado:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+    return 0;
+  }
+    
      
       /* Filtrar y procesar registros para la placa específica
       const registrosVehiculo = rows
