@@ -666,10 +666,9 @@ export class InsRegistroEntradaService {
   }
 
   async getLastOdometro(placa: string): Promise<number> {
-    if (!placa) 
-      return 0;
+    if (!placa) return 0;
     }
-
+  
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:GH'; // Asegúrate de incluir todas las columnas necesarias
 
@@ -683,39 +682,37 @@ export class InsRegistroEntradaService {
       console.log('Registros encontrados:', rows.length); 
 
       const registrosVehiculo = rows
-        .filter(row => row && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
+        .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
           try{
+            
+            const rawTimestamp = row[0]?.trim();
+            const correctedTimestamp = rawTimestamp.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,'$3-$2-$1T$4');
+            const fecha = new Date(correctedTimestamp);
+            
             return {
               odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
-              fecha: new Date(
-                row[0].replace(
-                  /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/, 
-                  '$3-$2-$1T$4'
-                )
-              )
+              fecha: fecha
             };
           } catch (error) {
             console.error('Error al obtener último odómetro:', error);
+            
             return null;
           }
         })
-        .filter(Boolean) // Elimina registros nulos
-        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordena por fecha descendente
+        .filter(record => record !== null && !isNaN(record.fecha.getTime()))
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
 
-    console.log('Registros filtrados:', registrosVehiculo); // Debug
-
-    return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
-  } catch (error) {
-    console.error('Error detallado:', {
-      message: error.message,
-      stack: error.stack,
-      response: error.response?.data
-    });
-    return 0;
-  }
-    
-     
+      return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+    } catch (error) {
+      console.error('Error al obtener último odómetro:', {
+            message: error.message,
+            stack: error.stack,
+            response: error.response?.data
+        });
+      return 0;
+    }
+  }  
       /* Filtrar y procesar registros para la placa específica
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
@@ -758,4 +755,4 @@ export class InsRegistroEntradaService {
     }
   }*/
 
-}
+
