@@ -19,13 +19,11 @@ export class InsRegistroEntradaController {
   
   @Post('register')  
   @UseInterceptors(FileInterceptor('documento'))
-  async register(
-    @Body() body: any
-  ) {
+  async register(@Body() body: any) {
 
     const {revisiones, observacion, lastPlacaInfo, odometro, placa } = body;
 
-    const lastOdometro = await this.insRegistroEntradaService.getLastOdometro(placa);
+    const lastOdometro = await this.getLastOdometro(placa);
     if (parseFloat(odometro) <= lastOdometro) {
       throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometro})`);
     }
