@@ -26,15 +26,19 @@ export class PlacasService {
       });
 
       if (!data.values) {
-        console.warn('No se encontraron datos en el rango especificado');
+        console.log('No se encontraron datos en el rango especificado');
         return [];
       }
 
-      return data.values
-        .flat() // Aplanar el array
-        .filter(Boolean) // Eliminar valores vacíos
-        .map(placa => placa.toString().trim()) // Limpiar cada placa
-        .filter((placa, index, self) => self.indexOf(placa) === index); // Eliminar duplicados
+      // Procesamiento robusto
+      const placas = data.values
+        .flat() // Convierte matriz en array unidimensional
+        .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
+        .filter(item => item.length > 0); // Filtra strings vacíos
+  
+      console.log('Placas obtenidas:', placas); // Para diagnóstico
+      return placas;
+      
     } catch (error) {
       console.error('Error al obtener placas:', error);
       return []; // Fallback seguro
