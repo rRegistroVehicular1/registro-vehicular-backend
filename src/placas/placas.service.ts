@@ -31,16 +31,12 @@ export class PlacasService {
       }
 
       return data.values
-        .flat()
-        .map(placa => placa?.toString().trim())
-        .filter(placa => placa && placa.length > 0)
-        .filter((placa, index, self) => self.indexOf(placa) === index);
+        .flat() // Aplanar el array
+        .filter(Boolean) // Eliminar valores vacíos
+        .map(placa => placa.toString().trim()) // Limpiar cada placa
+        .filter((placa, index, self) => self.indexOf(placa) === index); // Eliminar duplicados
     } catch (error) {
-      console.error('Error crítico al cargar placas:', {
-        error: error.message,
-        sheetId: spreadsheetId,
-        range
-      });
+      console.error('Error al obtener placas:', error);
       return []; // Fallback seguro
     }
   }
