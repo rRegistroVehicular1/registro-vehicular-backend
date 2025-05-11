@@ -690,7 +690,6 @@ export class InsRegistroEntradaService {
             
             return {
               odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
-              odometroSalida: row[5] ? parseFloat(row[5]) : 0, // Columna F
               fecha: fecha
             };
           } catch (error) {
@@ -700,12 +699,8 @@ export class InsRegistroEntradaService {
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-      
-      if (registrosVehiculo.length === 0) {
-        return 0;
-      }
   
-      return registrosVehiculo[0].odometroEntrada;
+      return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
             message: error.message,
