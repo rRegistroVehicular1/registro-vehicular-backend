@@ -667,7 +667,6 @@ export class InsRegistroEntradaService {
 
   async getLastOdometro(placa: string): Promise<number> {
     if (!placa) return 0;
-    }
   
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:GH'; // Asegúrate de incluir todas las columnas necesarias
