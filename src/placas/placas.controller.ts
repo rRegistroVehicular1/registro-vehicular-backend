@@ -1,4 +1,4 @@
-erimport { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Header } from '@nestjs/common';
 import { PlacasService } from './placas.service';
 import { ApiTags } from '@nestjs/swagger';
 
