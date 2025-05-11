@@ -23,9 +23,12 @@ export class InsRegistroEntradaController {
 
     const {revisiones, observacion, lastPlacaInfo, odometro, placa } = body;
 
-    const lastOdometro = await this.getLastOdometro(placa);
-    if (parseFloat(odometro) <= lastOdometro) {
-      throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometro})`);
+     // Obtener último odómetro
+    const lastOdometroResponse = await this.getLastOdometro(placa);
+    const lastOdometroValue = lastOdometroResponse.lastOdometro || 0;
+    
+    if (parseFloat(odometro) <= lastOdometroValue) {
+      throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometroValue})`);
     }
     const result = await this.insRegistroEntradaService.processRegistroEntrada(revisiones, observacion, lastPlacaInfo, odometro);
     return result;
