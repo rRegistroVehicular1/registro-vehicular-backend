@@ -685,25 +685,28 @@ export class InsRegistroEntradaService {
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
           try{
-            
             const rawTimestamp = row[0]?.trim();
             const correctedTimestamp = rawTimestamp.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,'$3-$2-$1T$4');
             const fecha = new Date(correctedTimestamp);
             
             return {
               odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
+              odometroSalida: row[5] ? parseFloat(row[5]) : 0, // Columna F
               fecha: fecha
             };
           } catch (error) {
             console.error('Error al obtener último odómetro:', error);
-            
             return null;
           }
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-
-      return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+      
+      if (registrosVehiculo.length === 0) {
+        return 0;
+      }
+  
+      return registrosVehiculo[0].odometroEntrada;
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
             message: error.message,
