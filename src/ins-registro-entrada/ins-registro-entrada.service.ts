@@ -678,29 +678,49 @@ export class InsRegistroEntradaService {
       });
 
       const rows = response.data.values || [];
-      console.log('Registros encontrados:', rows.length); 
+      console.log(`Total de registros encontrados: ${rows.length}`); 
 
-      const registrosVehiculo = rows
-        .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
-        .map(row => {
-          try{
-            const rawTimestamp = row[0]?.trim();
-            const correctedTimestamp = rawTimestamp.replace(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,'$3-$2-$1T$4');
-            const fecha = new Date(correctedTimestamp);
-            
-            return {
-              odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
-              fecha: fecha
-            };
-          } catch (error) {
-            console.error('Error al obtener último odómetro:', error);
-            return null;
+      let ultimoOdometro = 0;
+      let ultimaFecha = new Date(0);
+
+      for (const row of rows) {
+        try {
+          // Verificar placa (columna B, índice 1)
+          const rowPlaca = row[1]?.toString().trim().toUpperCase();
+          if (!rowPlaca || rowPlaca !== placa.trim().toUpperCase()) continue;
+
+          // Obtener fecha (columna A, índice 0)
+          const fechaStr = row[0]?.toString().trim();
+          if (!fechaStr) continue;
+
+          // Parsear fecha en formato "dd/MM/yyyy, HH:mm:ss"
+          const [fechaPart, horaPart] = fechaStr.split(', ');
+          const [dia, mes, anio] = fechaPart.split('/');
+          const fecha = new Date(`${anio}-${mes}-${dia}T${horaPart}`);
+
+          if (isNaN(fecha.getTime())) {
+            console.warn(`Fecha inválida: ${fechaStr}`);
+            continue;
           }
-        })
-        .filter(record => record !== null && !isNaN(record.fecha.getTime()))
-        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-  
-      return registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+
+          // Obtener odómetro de entrada (columna GH, índice 190)
+          const odometroStr = row[190]?.toString().replace(',', '.').trim();
+          const odometro = odometroStr ? parseFloat(odometroStr) : 0;
+
+          console.log(`Registro encontrado - Fecha: ${fecha}, Odómetro: ${odometro}`);
+
+          // Actualizar si es el registro más reciente
+          if (fecha > ultimaFecha) {
+            ultimaFecha = fecha;
+            ultimoOdometro = odometro;
+          }
+        } catch (error) {
+          console.error('Error procesando fila:', error, row);
+        }
+      }
+
+      console.log(`Último odómetro para ${placa}: ${ultimoOdometro} (Fecha: ${ultimaFecha})`);
+      return ultimoOdometro;
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
             message: error.message,
