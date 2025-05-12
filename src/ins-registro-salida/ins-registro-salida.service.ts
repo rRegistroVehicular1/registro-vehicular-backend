@@ -161,8 +161,8 @@ export class InsRegistroSalidaService {
   }
 
   private initializeArrays({
-    //llantasParte1,
-    //llantasParte2,
+    llantasParte1,
+    llantasParte2,
     revisiones,
     fluidos,
     parametrosVisuales,
@@ -172,7 +172,7 @@ export class InsRegistroSalidaService {
     dasCarroceria,
   }: any) {
     return {
-      /*llanta1: llantasParte1[0],
+      llanta1: llantasParte1[0],
       llanta2: llantasParte1[1],
       llanta3: llantasParte1[2],
       llanta4: llantasParte1[3],
@@ -181,7 +181,7 @@ export class InsRegistroSalidaService {
       llanta7: llantasParte2[1],
       llanta8: llantasParte2[2],
       llanta9: llantasParte2[3],
-      llanta10: llantasParte2[4],*/
+      llanta10: llantasParte2[4],
       revisiones1: revisiones[0] || null, // Llanta 1
       revisiones2: revisiones[1] || null, // Llanta 2
       revisiones5: revisiones[4] || null, // Llanta 5
