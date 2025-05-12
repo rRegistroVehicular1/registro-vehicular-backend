@@ -133,16 +133,16 @@ export class InsRegistroEntradaService {
     return {
       revisiones1: revisiones[0],
       revisiones2: revisiones[1],
-      revisiones3: revisiones[2],
-      revisiones4: revisiones[3],
+      //revisiones3: revisiones[2],
+      //revisiones4: revisiones[3],
       revisiones5: revisiones[4],
       revisiones6: revisiones[5],
       revisiones7: revisiones[6],
       revisiones8: revisiones[7],
-      revisiones9: revisiones[8],
-      revisiones10: revisiones[9],
-      revisiones11: revisiones[10],
-      revisiones12: revisiones[11],
+      //revisiones9: revisiones[8],
+      //revisiones10: revisiones[9],
+      //revisiones11: revisiones[10],
+      //revisiones12: revisiones[11],
     };
   }
 
