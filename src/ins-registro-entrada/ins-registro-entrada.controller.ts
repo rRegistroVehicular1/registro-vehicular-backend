@@ -32,8 +32,8 @@ export class InsRegistroEntradaController {
 
      // Validar que el odómetro sea mayor al último registrado
     const lastOdometro = await this.getLastOdometro(placa);
-    if (parseFloat(odometro) <= lastOdometroValue) {
-      throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometroValue})`);
+    if (parseFloat(odometro) <= lastOdometro) {
+      throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometro})`);
     }
     const result = await this.insRegistroEntradaService.processRegistroEntrada(revisiones, observacion, lastPlacaInfo, odometro);
     return result;
