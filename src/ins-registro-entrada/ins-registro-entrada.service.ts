@@ -157,16 +157,16 @@ export class InsRegistroEntradaService {
       [
         revisiones1?.descripcion, revisiones1?.opcion ? "sí" : "no",
         revisiones2?.descripcion, revisiones2?.opcion ? "sí" : "no",
-        revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
-        revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
+        //revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
+        //revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
         revisiones5?.descripcion, revisiones5?.opcion ? "sí" : "no",
         revisiones6?.descripcion, revisiones6?.opcion ? "sí" : "no",
         revisiones7?.descripcion, revisiones7?.opcion ? "sí" : "no",
         revisiones8?.descripcion, revisiones8?.opcion ? "sí" : "no",
-        revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
-        revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
-        revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
-        revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
+        //revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
+        //revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
+        //revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
+        //revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
         observacion
       ],
     ];
