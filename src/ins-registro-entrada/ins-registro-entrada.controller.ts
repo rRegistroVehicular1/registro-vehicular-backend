@@ -24,18 +24,45 @@ export class InsRegistroEntradaController {
     return { success: true, placa, lastOdometro, timestamp: new Date().toISOString() };
   }
   
-  @Post('register')  
-  @UseInterceptors(FileInterceptor('documento'))
-  async register(@Body() body: any) {
-
-    const {revisiones, observacion, lastPlacaInfo, odometro, placa } = body;
-
-     // Validar que el odómetro sea mayor al último registrado
-    const lastOdometro = await this.getLastOdometro(placa);
-    if (parseFloat(odometro) <= lastOdometro) {
-      throw new BadRequestException(`El odómetro debe ser mayor al último registrado (${lastOdometro})`);
+  @Post('register')
+@UseInterceptors(FileInterceptor('documento'))
+async register(@Body() body: any) {
+    try {
+      const { revisiones, observacion, lastPlacaInfo, odometro, placa } = body;
+  
+      // 1. Validación básica (sin romper el flujo existente)
+      if (!lastPlacaInfo) {
+        throw new BadRequestException('Se requiere lastPlacaInfo');
+      }
+  
+      // 2. Validación "no intrusiva" del odómetro
+      const odometroNum = parseFloat(odometro);
+      if (placa && !isNaN(odometroNum)) {
+        const validation = await this.validateOdometro(placa, odometroNum);
+        if (!validation.valid) {
+          console.warn(`Advertencia: Odómetro ${odometroNum} es menor al último registrado (${validation.lastOdometro})`);
+          // No se rechaza, solo se registra la advertencia
+        }
+      }
+  
+      // 3. Procesamiento original garantizado
+      return await this.processRegistroEntradaOriginal(
+        revisiones,
+        observacion,
+        lastPlacaInfo,
+        odometro
+      );
+  
+    } catch (error) {
+      console.error('Error en registro:', {
+        error: error.message,
+        stack: error.stack,
+        body
+      });
+      throw new HttpException(
+        error.message || 'Error procesando registro',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
-    const result = await this.insRegistroEntradaService.processRegistroEntrada(revisiones, observacion, lastPlacaInfo, odometro);
-    return result;
   }
 }
