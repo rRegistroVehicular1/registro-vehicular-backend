@@ -148,25 +148,25 @@ export class InsRegistroEntradaService {
 
   private buildValues({ observacion, ...arrays }: any) {
     const {
-      revisiones1, revisiones2, /*revisiones3*/, revisiones4,
-      revisiones5, /*revisiones6*/, revisiones7, revisiones8,
-      //revisiones9, revisiones10, revisiones11, revisiones12,
+      revisiones1, revisiones2, revisiones3, revisiones4,
+      revisiones5, revisiones6, revisiones7, revisiones8,
+      revisiones9, revisiones10, revisiones11, revisiones12,
     } = arrays;
 
     return [
       [
         revisiones1?.descripcion, revisiones1?.opcion ? "sí" : "no",
         revisiones2?.descripcion, revisiones2?.opcion ? "sí" : "no",
-        //revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
-        //revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
+        revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
+        revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
         revisiones5?.descripcion, revisiones5?.opcion ? "sí" : "no",
         revisiones6?.descripcion, revisiones6?.opcion ? "sí" : "no",
         revisiones7?.descripcion, revisiones7?.opcion ? "sí" : "no",
         revisiones8?.descripcion, revisiones8?.opcion ? "sí" : "no",
-        //revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
-        //revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
-        //revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
-        //revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
+        revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
+        revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
+        revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
+        revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
         observacion
       ],
     ];
