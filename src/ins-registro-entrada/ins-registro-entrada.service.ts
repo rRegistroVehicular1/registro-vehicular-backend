@@ -26,12 +26,24 @@ export class InsRegistroEntradaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
     try {
+      // Validación básica (NUEVO)
+      if (!lastPlacaInfo) {
+        throw new Error('Se requiere lastPlacaInfo');
+      }
+  
+      // Validación de odómetro (NUEVO)
+      const odometroNum = Number(odometro);
+      if (isNaN(odometroNum) || odometroNum < 0) {
+        throw new Error('El odómetro debe ser un número válido');
+      }
+      
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
 
       const rowNumber = parseInt(lastPlacaInfo, 10);
 
+      // Operaciones en Google Sheets
       const startColumn = 'FG';
       const range = `Hoja 1!${startColumn}${rowNumber}`;
 
@@ -91,7 +103,10 @@ export class InsRegistroEntradaService {
       const rowData = await this.getRowFromSheet(rowNumber);
 
       return {
+        success: true,
         message: 'Datos procesados y almacenados correctamente en Google Sheets',
+        rowNumber: rowNumber,
+        timestamp: new Date().toISOString()
         updatedRow: rowData,
       };
     } catch (error) {
@@ -664,57 +679,3 @@ export class InsRegistroEntradaService {
 
     return transporter.sendMail(mailOptions);
   }
-
-  async processRegistroEntradaOriginal(
-    revisiones: any[],
-    observacion: string,
-    lastPlacaInfo: string,
-    odometro: string
-  ) {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    
-    try {
-      // 1. Validación mínima para no romper el flujo existente
-      if (!lastPlacaInfo) throw new Error('Falta lastPlacaInfo');
-  
-      // 2. Procesamiento original (sin validación de odómetro)
-      await this.sheets.spreadsheets.values.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          valueInputOption: 'RAW',
-          data: [
-            {
-              range: `Hoja 1!G${lastPlacaInfo}`,
-              values: [['entrada']]
-            },
-            {
-              range: `Hoja 1!GH${lastPlacaInfo}`,
-              values: [[odometro]]
-            }
-          ]
-        }
-      });
-  
-      return { success: true, message: 'Registro exitoso' };
-  
-    } catch (error) {
-      console.error('Error en processRegistroEntradaOriginal:', error);
-      throw error;
-    }
-  }
-
-  // Nuevo método solo para validación
-async validateOdometro(placa: string, nuevoOdometro: number): Promise<{valid: boolean, lastOdometro?: number}> {
-  if (!placa) return { valid: true }; // No validar si no hay placa
-  
-  try {
-    const lastOdometro = await this.getLastOdometro(placa);
-    return {
-      valid: nuevoOdometro >= lastOdometro,
-      lastOdometro
-    };
-  } catch (error) {
-    console.error('Error validando odómetro, continuando sin validación:', error);
-    return { valid: true }; // Fallback para no bloquear el flujo
-  }
-}
