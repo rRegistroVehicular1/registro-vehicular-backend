@@ -254,7 +254,7 @@ export class InsRegistroSalidaService {
         tipoVehiculo,
         odometroSalida,
         estadoSalida,
-        "llanta 1", llanta1?.fp ? "sí" : " ", llanta1?.pe ? "sí" : "", llanta1?.pa ? "sí" : "", llanta1?.desgaste ? "x" : "",
+        "llanta 1", llanta1?.fp ? "x" : " ", llanta1?.pe ? "x" : "", llanta1?.pa ? "x" : "", llanta1?.desgaste ? "x" : "",
         "llanta 2", llanta2?.fp ? "sí" : "", llanta2?.pe ? "sí" : "", llanta2?.pa ? "sí" : "", llanta2?.desgaste ? "x" : "",
         "llanta 3", llanta3?.fp ? "sí" : "", llanta3?.pe ? "sí" : "", llanta3?.pa ? "sí" : "", llanta3?.desgaste ? "x" : "",
         "llanta 4", llanta4?.fp ? "sí" : "", llanta4?.pe ? "sí" : "", llanta4?.pa ? "sí" : "", llanta4?.desgaste ? "x" : "",
