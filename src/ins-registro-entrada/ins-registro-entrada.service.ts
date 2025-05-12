@@ -665,53 +665,56 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometro(placa: string): Promise<number> {
-    if (!placa) return 0;
-  
+  async processRegistroEntradaOriginal(
+    revisiones: any[],
+    observacion: string,
+    lastPlacaInfo: string,
+    odometro: string
+  ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!A2:GH';
-  
+    
     try {
-      const response = await this.sheets.spreadsheets.values.get({
+      // 1. Validación mínima para no romper el flujo existente
+      if (!lastPlacaInfo) throw new Error('Falta lastPlacaInfo');
+  
+      // 2. Procesamiento original (sin validación de odómetro)
+      await this.sheets.spreadsheets.values.batchUpdate({
         spreadsheetId,
-        range,
+        requestBody: {
+          valueInputOption: 'RAW',
+          data: [
+            {
+              range: `Hoja 1!G${lastPlacaInfo}`,
+              values: [['entrada']]
+            },
+            {
+              range: `Hoja 1!GH${lastPlacaInfo}`,
+              values: [[odometro]]
+            }
+          ]
+        }
       });
   
-      const rows = response.data.values || [];
-      console.log('Registros encontrados:', rows.length);
+      return { success: true, message: 'Registro exitoso' };
   
-      const registrosVehiculo = rows
-        .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
-        .map(row => {
-          try {
-            const rawTimestamp = row[0]?.trim();
-            const correctedTimestamp = rawTimestamp.replace(
-              /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
-              '$3-$2-$1T$4'
-            );
-            const fecha = new Date(correctedTimestamp);
-            
-            return {
-              odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
-              fecha: fecha
-            };
-          } catch (error) {
-            console.error('Error al procesar fecha:', error);
-            return null;
-          }
-        })
-        .filter(record => record !== null && !isNaN(record.fecha.getTime()))
-        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-  
-      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
-      console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
-      return ultimoOdometro;
     } catch (error) {
-      console.error('Error al obtener último odómetro:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response?.data
-      });
-      return 0;
+      console.error('Error en processRegistroEntradaOriginal:', error);
+      throw error;
     }
+  }
+
+  // Nuevo método solo para validación
+async validateOdometro(placa: string, nuevoOdometro: number): Promise<{valid: boolean, lastOdometro?: number}> {
+  if (!placa) return { valid: true }; // No validar si no hay placa
+  
+  try {
+    const lastOdometro = await this.getLastOdometro(placa);
+    return {
+      valid: nuevoOdometro >= lastOdometro,
+      lastOdometro
+    };
+  } catch (error) {
+    console.error('Error validando odómetro, continuando sin validación:', error);
+    return { valid: true }; // Fallback para no bloquear el flujo
+  }
 }
