@@ -127,10 +127,8 @@ export class InsRegistroEntradaService {
     return data;
   }
 
-  private initializeArrays({
-    revisiones
-  }: any) {
-    return {
+  private initializeArrays({revisiones}: any) {
+    const arrays = {
       revisiones1: revisiones[0],
       revisiones2: revisiones[1],
       revisiones3: revisiones[2],
@@ -144,14 +142,27 @@ export class InsRegistroEntradaService {
       revisiones11: revisiones[10],
       revisiones12: revisiones[11],
     };
+    return {
+      ...arrays,  // <-- Mantiene compatibilidad con código existente
+        revisionesArray: revisiones, // <-- Nuevo: array original con IDs
+        observacion: arrays.observacion
+    };
   }
 
   private buildValues({ observacion, ...arrays }: any) {
-    const {
-      revisiones1, revisiones2, revisiones3, revisiones4,
-      revisiones5, revisiones6, revisiones7, revisiones8,
-      revisiones9, revisiones10, revisiones11, revisiones12,
-    } = arrays;
+    const values = [];
+    
+    // 1. Mapeamos las 12 posiciones esperadas en Google Sheets
+    for (let i = 1; i <= 12; i++) {
+        const llanta = revisionesArray.find(ll => ll?.id === i);
+        values.push(
+            llanta?.descripcion || '',
+            llanta?.opcion ? "sí" : "no"
+        );
+    }
+    values.push(observacion);
+    return [values];
+    }
 
     return [
       [
