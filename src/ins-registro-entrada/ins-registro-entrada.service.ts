@@ -127,49 +127,34 @@ export class InsRegistroEntradaService {
     return data;
   }
 
-  private initializeArrays({
-    revisiones
-  }: any) {
-    return {
-      revisiones1: revisiones[0],
-      revisiones2: revisiones[1],
-      revisiones3: revisiones[2],
-      revisiones4: revisiones[3],
-      revisiones5: revisiones[4],
-      revisiones6: revisiones[5],
-      revisiones7: revisiones[6],
-      revisiones8: revisiones[7],
-      revisiones9: revisiones[8],
-      revisiones10: revisiones[9],
-      revisiones11: revisiones[10],
-      revisiones12: revisiones[11],
-    };
+  private initializeArrays({revisiones}: any) {
+    // Creamos un objeto donde la clave es el ID de la llanta
+    const revisionesMap: Record<number, any> = {
+    revisiones.forEach((rev) => {
+        if (rev && rev.id) {
+            revisionesMap[rev.id] = rev;
+        }
+      });
+    return { revisionesMap, observacion };
   }
 
-  private buildValues({ observacion, ...arrays }: any) {
-    const {
-      revisiones1, revisiones2, revisiones3, revisiones4,
-      revisiones5, revisiones6, revisiones7, revisiones8,
-      revisiones9, revisiones10, revisiones11, revisiones12,
-    } = arrays;
+  private buildValues({ observacion, revisionesMap }: any) {
+    // Orden de columnas en Google Sheets (1 a 12)
+    const llantasOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    const values = [];
 
-    return [
-      [
-        revisiones1?.descripcion, revisiones1?.opcion ? "sí" : "no",
-        revisiones2?.descripcion, revisiones2?.opcion ? "sí" : "no",
-        revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
-        revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
-        revisiones5?.descripcion, revisiones5?.opcion ? "sí" : "no",
-        revisiones6?.descripcion, revisiones6?.opcion ? "sí" : "no",
-        revisiones7?.descripcion, revisiones7?.opcion ? "sí" : "no",
-        revisiones8?.descripcion, revisiones8?.opcion ? "sí" : "no",
-        revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
-        revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
-        revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
-        revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
-        observacion
-      ],
-    ];
+    llantasOrder.forEach((id) => {
+        const revision = revisionesMap[id];
+        if (revision) {
+            values.push(revision.descripcion, revision.opcion ? "sí" : "no");
+        } else {
+            // Si no existe la llanta, se llena con vacío
+            values.push("", "no");
+        }
+    });
+    
+    values.push(observacion);
+    return [values],
   }
 
   async getRowFromSheet(rowNumber: number) {
