@@ -17,45 +17,15 @@ export class InsRegistroEntradaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  private validateTiresData(tipoVehiculo: string, revisiones: any[]): boolean {
-    const requiredTires = tipoVehiculo === 'camion' 
-      ? [1, 2, 5, 6, 7, 8] 
-      : [1, 2, 5, 7];
-    
-    const receivedTires = revisiones.map(r => r?.id).filter(Boolean);
-    
-    const missingTires = requiredTires.filter(id => !receivedTires.includes(id));
-    const extraTires = receivedTires.filter(id => !requiredTires.includes(id));
-    
-    if (missingTires.length > 0 || extraTires.length > 0) {
-      console.error('Error en mapeo de llantas:', {
-        tipoVehiculo,
-        requiredTires,
-        receivedTires,
-        missingTires,
-        extraTires
-      });
-      return false;
-    }
-    
-    return true;
-  }
-
   async processRegistroEntrada(
     revisiones: [],
     observacion: string,
-    lastPlacaInfo: any, //era tipo string
+    lastPlacaInfo: string, 
     odometro: string,
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
     try {
-
-      // Validación de llantas (NUEVO)
-      if (!this.validateTiresData(lastPlacaInfo.tipoVehiculo, revisiones)) {
-        throw new Error('Error en el mapeo de llantas. Verificar consola para detalles.');
-      }
-
       // Validación básica existente
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
@@ -178,25 +148,25 @@ export class InsRegistroEntradaService {
 
   private buildValues({ observacion, ...arrays }: any) {
     const {
-      revisiones1, revisiones2, /*revisiones3, revisiones4,*/
+      revisiones1, revisiones2, revisiones3, revisiones4,
       revisiones5, revisiones6, revisiones7, revisiones8,
-      /*revisiones9, revisiones10, revisiones11, revisiones12,*/
+      revisiones9, revisiones10, revisiones11, revisiones12,
     } = arrays;
 
     return [
       [
         revisiones1?.descripcion, revisiones1?.opcion ? "sí" : "no",
         revisiones2?.descripcion, revisiones2?.opcion ? "sí" : "no",
-        //revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
-        //revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
+        revisiones3?.descripcion, revisiones3?.opcion ? "sí" : "no",
+        revisiones4?.descripcion, revisiones4?.opcion ? "sí" : "no",
         revisiones5?.descripcion, revisiones5?.opcion ? "sí" : "no",
         revisiones6?.descripcion, revisiones6?.opcion ? "sí" : "no",
         revisiones7?.descripcion, revisiones7?.opcion ? "sí" : "no",
         revisiones8?.descripcion, revisiones8?.opcion ? "sí" : "no",
-        //revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
-        //revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
-        //revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
-        //revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
+        revisiones9?.descripcion, revisiones9?.opcion ? "sí" : "no",
+        revisiones10?.descripcion, revisiones10?.opcion ? "sí" : "no",
+        revisiones11?.descripcion, revisiones11?.opcion ? "sí" : "no",
+        revisiones12?.descripcion, revisiones12?.opcion ? "sí" : "no",
         observacion
       ],
     ];
