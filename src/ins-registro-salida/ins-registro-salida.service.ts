@@ -182,12 +182,6 @@ export class InsRegistroSalidaService {
       llanta8: llantasParte2[2],
       llanta9: llantasParte2[3],
       llanta10: llantasParte2[4],
-      revisiones1: revisiones[0] || null, // Llanta 1
-      revisiones2: revisiones[1] || null, // Llanta 2
-      revisiones5: revisiones[4] || null, // Llanta 5
-      revisiones6: revisiones[5] || null, // Llanta 6
-      revisiones7: revisiones[6] || null, // Llanta 7
-      revisiones8: revisiones[7] || null  // Llanta 8
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
