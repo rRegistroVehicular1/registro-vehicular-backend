@@ -21,16 +21,56 @@ export class InsRegistroSalidaService {
 
   // Modifica la función validateTires:
   private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
-    const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
-    console.log(`tipo de Vehiculo: ${tipoVehiculo}, idsPermitidos: ${idsPermitidos}`);
+    const configPermitida = {
+      camion: {
+        maxLlantas: 6,
+        idsPermitidos: [1, 2, 5, 6, 7, 8],
+        nombresEsperados: [
+          'Llanta Delantera Izquierda',
+          'Llanta Delantera Derecha',
+          'Llanta Trasera Izquierda',
+          'Llanta Extra Trasera Izquierda',
+          'Llanta Trasera Derecha',
+          'Llanta Extra Trasera Derecha'
+        ]
+      },
+      default: {
+        maxLlantas: 4,
+        idsPermitidos: [1, 2, 5, 7],
+        nombresEsperados: [
+          'Llanta Delantera Izquierda',
+          'Llanta Delantera Derecha',
+          'Llanta Trasera Izquierda',
+          'Llanta Trasera Derecha'
+        ]
+      }
+    };
+  
+    const config = tipoVehiculo === 'camion' ? configPermitida.camion : configPermitida.default;
     const todasLlantas = [...llantasParte1, ...llantasParte2];
-    console.log(`todasLlantas: ${todasLlantas}`);
-    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llantas => llantas.id);
-    console.log(idsEnviados);
-    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-     console.log(idsInvalidos);
+  
+    // Validar cantidad de llantas
+    if (todasLlantas.length !== config.maxLlantas) {
+      throw new Error(`El vehículo tipo ${tipoVehiculo} debe tener exactamente ${config.maxLlantas} llantas`);
+    }
+  
+    // Validar IDs
+    const idsInvalidos = todasLlantas
+      .filter(llanta => !config.idsPermitidos.includes(llanta.id))
+      .map(llanta => llanta.id);
+  
     if (idsInvalidos.length > 0) {
-      throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
+      throw new Error(`IDs de llantas no permitidos para ${tipoVehiculo}: ${idsInvalidos.join(', ')}`);
+    }
+  
+    // Validar que todas las llantas tengan al menos una opción seleccionada
+    const llantasSinSeleccion = todasLlantas.filter(
+      llanta => !llanta.fp && !llanta.pe && !llanta.pa && !llanta.desgaste
+    );
+  
+    if (llantasSinSeleccion.length > 0) {
+      const llantasInvalidas = llantasSinSeleccion.map(llanta => llanta.nombre).join(', ');
+      throw new Error(`Debe seleccionar al menos una opción para las llantas: ${llantasInvalidas}`);
     }
   }
 
@@ -227,6 +267,16 @@ export class InsRegistroSalidaService {
     };
   }
 
+  private buildTiresValues(llantas: any[]) {
+    return llantas.flatMap(llanta => [
+      `Llanta ${llanta.id}`,
+      llanta.fp ? "sí" : "",
+      llanta.pe ? "sí" : "",
+      llanta.pa ? "sí" : "",
+      llanta.desgaste ? "x" : ""
+    ]);
+  }
+  
   private buildValues({
     fechaHoraActual,
     placa,
@@ -251,6 +301,9 @@ export class InsRegistroSalidaService {
       documentacion5, documentacion6, documentacion7, documentacion8,
       dasCarroceria1, dasCarroceria2, dasCarroceria3, dasCarroceria4,
     } = arrays;
+
+    const llantasParte1 = [llanta1, llanta2, llanta3, llanta4, llanta5];
+    const llantasParte2 = [llanta6, llanta7, llanta8, llanta9, llanta10];
     
     return [
       [
@@ -261,7 +314,9 @@ export class InsRegistroSalidaService {
         tipoVehiculo,
         odometroSalida,
         estadoSalida,
-        "llanta 1", llanta1?.fp ? "sí" : " ", llanta1?.pe ? "sí" : "", llanta1?.pa ? "sí" : "", llanta1?.desgaste ? "x" : "",
+        ...this.buildTiresValues(llantasParte1),
+        ...this.buildTiresValues(llantasParte2),
+        /*"llanta 1", llanta1?.fp ? "sí" : " ", llanta1?.pe ? "sí" : "", llanta1?.pa ? "sí" : "", llanta1?.desgaste ? "x" : "",
         "llanta 2", llanta2?.fp ? "sí" : "", llanta2?.pe ? "sí" : "", llanta2?.pa ? "sí" : "", llanta2?.desgaste ? "x" : "",
         "llanta 3", llanta3?.fp ? "sí" : "", llanta3?.pe ? "sí" : "", llanta3?.pa ? "sí" : "", llanta3?.desgaste ? "x" : "",
         "llanta 4", llanta4?.fp ? "sí" : "", llanta4?.pe ? "sí" : "", llanta4?.pa ? "sí" : "", llanta4?.desgaste ? "x" : "",
@@ -270,7 +325,7 @@ export class InsRegistroSalidaService {
         "llanta 7", llanta7?.fp ? "sí" : "", llanta7?.pe ? "sí" : "", llanta7?.pa ? "sí" : "", llanta7?.desgaste ? "x" : "",
         "llanta 8", llanta8?.fp ? "sí" : "", llanta8?.pe ? "sí" : "", llanta8?.pa ? "sí" : "", llanta8?.desgaste ? "x" : "",
         "llanta 9", llanta9?.fp ? "sí" : "", llanta9?.pe ? "sí" : "", llanta9?.pa ? "sí" : "", llanta9?.desgaste ? "x" : "",
-        "llanta 10", llanta10?.fp ? "sí" : "", llanta10?.pe ? "sí" : "", llanta10?.pa ? "sí" : "", llanta10?.desgaste ? "x" : "",
+        "llanta 10", llanta10?.fp ? "sí" : "", llanta10?.pe ? "sí" : "", llanta10?.pa ? "sí" : "", llanta10?.desgaste ? "x" : "",*/
         observacionGeneralLlantas,
         "Nivel 1", fluido1?.nombre, fluido1?.requiere ? "sí" : "", fluido1?.lleno ? "sí" : "",
         "Nivel 2", fluido2?.nombre, fluido2?.requiere ? "sí" : "", fluido2?.lleno ? "sí" : "",
