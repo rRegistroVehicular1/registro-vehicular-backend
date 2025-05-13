@@ -710,7 +710,7 @@ export class InsRegistroEntradaService {
             const fecha = new Date(correctedTimestamp);
             
             return {
-              odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
+              odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
               fecha: fecha
             };
           } catch (error) {
