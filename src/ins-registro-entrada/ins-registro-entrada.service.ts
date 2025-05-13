@@ -696,7 +696,7 @@ export class InsRegistroEntradaService {
       const rows = response.data.values || [];
       console.log('Registros encontrados:', rows.length);
       console.log(placa.toUpperCase());
-      console.log(rows[1].toUpperCase());
+      
       
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
@@ -720,7 +720,7 @@ export class InsRegistroEntradaService {
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
-
+      console.log(registrosVehiculo);
      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       return ultimoOdometro;
