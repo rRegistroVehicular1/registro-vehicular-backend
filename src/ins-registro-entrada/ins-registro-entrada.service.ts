@@ -685,7 +685,7 @@ export class InsRegistroEntradaService {
   
 
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!A2:GH2';
+    const range = 'Hoja 1!A2:GH500';
   
     try {
       const response = await this.sheets.spreadsheets.values.get({
