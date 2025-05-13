@@ -24,9 +24,10 @@ export class InsRegistroSalidaService {
     const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
     
     const todasLlantas = [...llantasParte1, ...llantasParte2];
-    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
+    /const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
     
-    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+    const idsInvalidos = todasLlantas.filter(llanta => !idsPermitidos.includes(llanta.id))
+                                 .map(llanta => llanta.id);
       
     if (idsInvalidos.length > 0) {
       throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
