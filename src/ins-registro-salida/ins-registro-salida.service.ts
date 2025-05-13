@@ -22,10 +22,11 @@ export class InsRegistroSalidaService {
   // Modifica la función validateTires:
   private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
     const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
-    
+    console.log(`tipo de Vehiculo: ${tipoVehiculo}, idsPermitidos: ${idsPermitidos}`);
     const todasLlantas = [...llantasParte1, ...llantasParte2];
+    console.log(`todasLlantas: ${todasLlantas}`);
     const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
-  
+    console.log(`idsEnviados: ${idsEnviados}`);
     const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
     
     if (idsInvalidos.length > 0) {
@@ -87,7 +88,9 @@ export class InsRegistroSalidaService {
       insumos = this.processJSON(insumos);
       documentacion = this.processJSON(documentacion);
       dasCarroceria = this.processJSON(dasCarroceria);
-
+      console.log(`llantasParte1: ${llantasParte1}`);
+      console.log(`llantasParte2: ${llantasParte2}`);
+      
       const arrays = this.initializeArrays({
         llantasParte1,
         llantasParte2,
