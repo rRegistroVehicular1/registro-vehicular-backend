@@ -91,6 +91,7 @@ export class InsRegistroSalidaService {
       console.log(llantasParte1);
       console.log(llantasParte2);
       console.log('Hasta aqui llantas');
+      console.log(llantasParte1.concat(llantasParte1));
       const arrays = this.initializeArrays({
         llantasParte1,
         llantasParte2,
