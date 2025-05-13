@@ -25,7 +25,7 @@ export class InsRegistroSalidaService {
     console.log(`tipo de Vehiculo: ${tipoVehiculo}, idsPermitidos: ${idsPermitidos}`);
     const todasLlantas = [...llantasParte1, ...llantasParte2];
     console.log(`todasLlantas: ${todasLlantas}`);
-    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
+    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llantas => llantas.id);
     console.log(`idsEnviados: ${idsEnviados}`);
     const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
     
