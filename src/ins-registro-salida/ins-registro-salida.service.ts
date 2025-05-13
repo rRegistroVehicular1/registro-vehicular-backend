@@ -88,8 +88,8 @@ export class InsRegistroSalidaService {
       insumos = this.processJSON(insumos);
       documentacion = this.processJSON(documentacion);
       dasCarroceria = this.processJSON(dasCarroceria);
-      console.log(`llantasParte1: ${llantasParte1}`);
-      console.log(`llantasParte2: ${llantasParte2}`);
+      console.log(llantasParte1);
+      console.log(llantasParte2);
       
       const arrays = this.initializeArrays({
         llantasParte1,
@@ -116,7 +116,7 @@ export class InsRegistroSalidaService {
         observacionGeneralVisuales,
         ...arrays,
       });
-
+      console.log(values);
       const response = await this.sheets.spreadsheets.values.append({
         auth: this.auth,
         spreadsheetId,
@@ -126,10 +126,10 @@ export class InsRegistroSalidaService {
           values: values,
         },
       });
-
+      console.log(response);
       const updatedRange = response.data.updates.updatedRange;
       const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
-
+      console.log(filaInsertada);
       await this.sheets.spreadsheets.values.update({
         auth: this.auth,
         spreadsheetId,
