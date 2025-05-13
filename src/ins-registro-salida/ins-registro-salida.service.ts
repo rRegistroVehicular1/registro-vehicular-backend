@@ -26,9 +26,9 @@ export class InsRegistroSalidaService {
     const todasLlantas = [...llantasParte1, ...llantasParte2];
     console.log(`todasLlantas: ${todasLlantas}`);
     const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llantas => llantas.id);
-    console.log(`idsEnviados: ${idsEnviados}`);
+    console.log(idsEnviados);
     const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-    
+     console.log(idsInvalidos);
     if (idsInvalidos.length > 0) {
       throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
     }
@@ -90,7 +90,7 @@ export class InsRegistroSalidaService {
       dasCarroceria = this.processJSON(dasCarroceria);
       console.log(llantasParte1);
       console.log(llantasParte2);
-      
+      console.log('Hasta aqui llantas');
       const arrays = this.initializeArrays({
         llantasParte1,
         llantasParte2,
@@ -101,7 +101,7 @@ export class InsRegistroSalidaService {
         documentacion,
         dasCarroceria,
       });
-
+      console.log(arrays);
       const values = this.buildValues({
         fechaHoraActual,
         placa,
