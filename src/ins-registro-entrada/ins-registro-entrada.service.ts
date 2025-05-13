@@ -679,3 +679,54 @@ export class InsRegistroEntradaService {
 
     return transporter.sendMail(mailOptions);
   }
+
+  async getLastOdometro(placa: string): Promise<number> {
+    if (!placa) return 0;
+  
+
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    const range = 'Hoja 1!A2:GH2';
+  
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+      });
+
+      const rows = response.data.values || [];
+      console.log('Registros encontrados:', rows.length);
+  /*
+      const registrosVehiculo = rows
+        .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
+        .map(row => {
+          try {
+            const rawTimestamp = row[0]?.trim();
+            const correctedTimestamp = rawTimestamp.replace(
+              /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
+              '$3-$2-$1T$4'
+            );
+            const fecha = new Date(correctedTimestamp);
+            
+            return {
+              odometroEntrada: row[190] ? parseFloat(row[190]) : 0, // Columna GH
+              fecha: fecha
+            };
+          } catch (error) {
+            console.error('Error al procesar fecha:', error);
+            return null;
+          }
+        })
+        .filter(record => record !== null && !isNaN(record.fecha.getTime()))
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+
+      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+      console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
+      return ultimoOdometro;
+    } catch (error) {
+      console.error('Error al obtener último odómetro:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data
+      });*/
+      return 0;
+    }
