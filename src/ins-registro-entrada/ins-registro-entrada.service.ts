@@ -695,8 +695,9 @@ export class InsRegistroEntradaService {
 
       const rows = response.data.values || [];
       console.log('Registros encontrados:', rows.length);
-      console.log(rows);
-  
+      console.log(placa.trim().toUpperCase());
+      console.log(rows[1].trim().toUpperCase());
+      
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
