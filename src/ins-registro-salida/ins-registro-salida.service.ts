@@ -76,7 +76,7 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      llantas = this.processJSON(llantasParte1);
+      llantas = this.processJSON(llantas);
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
