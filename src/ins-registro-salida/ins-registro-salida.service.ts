@@ -25,9 +25,9 @@ export class InsRegistroSalidaService {
     
     const todasLlantas = [...llantasParte1, ...llantasParte2];
     const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
-    
+  
     const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-      
+    
     if (idsInvalidos.length > 0) {
       throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
     }
@@ -87,15 +87,10 @@ export class InsRegistroSalidaService {
       insumos = this.processJSON(insumos);
       documentacion = this.processJSON(documentacion);
       dasCarroceria = this.processJSON(dasCarroceria);
-      console.log(llantasParte1);
-      console.log(llantasParte2);
-      console.log('Hasta aqui llantas');
-      const todasLasLlantas = llantasParte1.concat(llantasParte2);
-      console.log(todasLasLlantas);
+
       const arrays = this.initializeArrays({
-        //llantasParte1,
-        //llantasParte2,
-        todasLasLlantas,
+        llantasParte1,
+        llantasParte2,
         fluidos,
         parametrosVisuales,
         luces,
@@ -103,7 +98,7 @@ export class InsRegistroSalidaService {
         documentacion,
         dasCarroceria,
       });
-      console.log(arrays);
+
       const values = this.buildValues({
         fechaHoraActual,
         placa,
@@ -118,7 +113,7 @@ export class InsRegistroSalidaService {
         observacionGeneralVisuales,
         ...arrays,
       });
-      console.log(values);
+
       const response = await this.sheets.spreadsheets.values.append({
         auth: this.auth,
         spreadsheetId,
@@ -128,10 +123,10 @@ export class InsRegistroSalidaService {
           values: values,
         },
       });
-      console.log(response);
+
       const updatedRange = response.data.updates.updatedRange;
       const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
-      console.log(filaInsertada);
+
       await this.sheets.spreadsheets.values.update({
         auth: this.auth,
         spreadsheetId,
@@ -166,9 +161,8 @@ export class InsRegistroSalidaService {
   }
 
   private initializeArrays({
-    //llantasParte1,
-    //llantasParte2,
-    todasLasLlantas,
+    llantasParte1,
+    llantasParte2,
     fluidos,
     parametrosVisuales,
     luces,
@@ -177,16 +171,16 @@ export class InsRegistroSalidaService {
     dasCarroceria,
   }: any) {
     return {
-      llanta1: todasLasLlantas[0],
-      llanta2: todasLasLlantas[1],
-      llanta3: todasLasLlantas[2],
-      llanta4: todasLasLlantas[3],
-      llanta5: todasLasLlantas[4],
-      llanta6: todasLasLlantas[5],
-      llanta7: todasLasLlantas[6],
-      llanta8: todasLasLlantas[7],
-      llanta9: todasLasLlantas[8],
-      llanta10: todasLasLlantas[9],
+      llanta1: llantasParte1[0],
+      llanta2: llantasParte1[1],
+      llanta3: llantasParte1[2],
+      llanta4: llantasParte1[3],
+      llanta5: llantasParte1[4],
+      llanta6: llantasParte2[0],
+      llanta7: llantasParte2[1],
+      llanta8: llantasParte2[2],
+      llanta9: llantasParte2[3],
+      llanta10: llantasParte2[4],
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
@@ -226,16 +220,6 @@ export class InsRegistroSalidaService {
     };
   }
 
-  private buildTiresValues(llantas: any[]) {
-    return llantas.flatMap(llanta => [
-      `Llanta ${llanta.id}`,
-      llanta.fp ? "sí" : "",
-      llanta.pe ? "sí" : "",
-      llanta.pa ? "sí" : "",
-      llanta.desgaste ? "x" : ""
-    ]);
-  }
-  
   private buildValues({
     fechaHoraActual,
     placa,
@@ -260,9 +244,6 @@ export class InsRegistroSalidaService {
       documentacion5, documentacion6, documentacion7, documentacion8,
       dasCarroceria1, dasCarroceria2, dasCarroceria3, dasCarroceria4,
     } = arrays;
-
-    const llantasParte1 = [llanta1, llanta2, llanta3, llanta4, llanta5];
-    const llantasParte2 = [llanta6, llanta7, llanta8, llanta9, llanta10];
     
     return [
       [
