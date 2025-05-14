@@ -20,6 +20,7 @@ export class AppService {
     "(SU03) Chorrera": ["vehicularregistro526@gmail.com"],
     "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com"],
     "(SU05) Colón": ["vehicularregistro526@gmail.com"],
+    "(SU06) Juan Díaz": ["beto.asprilla@hotmail.com"],
     "(SU08) Aguadulce": ["beto.asprilla@gmail.com"],
     "(SU09) Los Santos": ["lasprilla344@gmail.com"]
   };
