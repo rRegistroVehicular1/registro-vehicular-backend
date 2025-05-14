@@ -510,7 +510,9 @@ export class InsRegistroEntradaService {
       const nameText = { fechaFormatoPDF, placa, nombreConductor, sucursal };
 
       const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetrev3);
+      //const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
       const sucursal1 = sucursal.match(/\((.*?)\)/)?.[1]?.trim() || 'ND';
+
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}.pdf`;
       
       await this.uploadFileToDrive({
@@ -521,21 +523,6 @@ export class InsRegistroEntradaService {
 
       console.log('Archivo PDF subido a Google Drive');
 
-      // ENVÍO A ENCARGADOS - NUEVA IMPLEMENTACIÓN
-      const emailsEncargados = this.appService.getEmailsForSucursal(sucursal);
-      
-      if (emailsEncargados.length > 0) {
-        await this.sendEmailToManagers(
-          pdfBuffer,
-          originalname,
-          emailsEncargados,
-          placa,
-          conductor,
-          sucursal
-        );
-      }
-
-      // Mantenemos el envío al correo principal (opcional)
       //const recipientEmail = 'vehicularregistro526@gmail.com';
       const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
       await this.sendEmail(pdfBuffer, recipientEmail, originalname);
@@ -551,41 +538,18 @@ export class InsRegistroEntradaService {
     const sheetName = 'Hoja 1';
 
     try {
-      // 1. Primero normalizamos el nombre de la sucursal
-      const sucursalNormalizada = sucursal.trim();
-
-      // 2. Obtenemos los encabezados
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range: `${sheetName}!A1:Z1`,
       });
 
-      if (!response.data.values || response.data.values.length === 0) {
-            throw new Error('No se encontraron encabezados en la hoja.');
-        }
-      
       const encabezados = response.data.values[0];
 
-      // 3. Buscamos coincidencia flexible
-      const columnaIndex = encabezados.findIndex((columna: string) => 
-        columna && typeof columna === 'string' && 
-        columna.trim().toLowerCase() === sucursalNormalizada.toLowerCase());
-      
+      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursal.trim().toLowerCase());
       if (columnaIndex === -1) {
-          // Intentamos buscar sin el código (SUXX)
-          const nombreSucursal = sucursalNormalizada.replace(/\(SU\d+\)\s*/i, '').trim();
-          const columnaIndexAlternativo = encabezados.findIndex((columna: string) => 
-              columna && typeof columna === 'string' && 
-              columna.trim().toLowerCase().includes(nombreSucursal.toLowerCase())
-          );
-            
-          if (columnaIndexAlternativo === -1) {
-              throw new Error(`Sucursal "${sucursalNormalizada}" no encontrada. Encabezados disponibles: ${encabezados.join(', ')}`);
-          }
-          return this.procesarColumnaConsecutivos(spreadsheetId, sheetName, columnaIndexAlternativo);
+        throw new Error(`Sucursal ${sucursal} no encontrada en el encabezado.`);
       }
-      return this.procesarColumnaConsecutivos(spreadsheetId, sheetName, columnaIndex);
-      
+
       const columnaLetra = String.fromCharCode(65 + columnaIndex);
 
       const valoresResponse = await this.sheets.spreadsheets.values.get({
@@ -615,33 +579,6 @@ export class InsRegistroEntradaService {
       throw new Error('No se pudo generar el número consecutivo.');
     }
   }
-
-  
-  private async procesarColumnaConsecutivos(spreadsheetId: string, sheetName: string, columnaIndex: number) {
-      const columnaLetra = String.fromCharCode(65 + columnaIndex);
-  
-      const valoresResponse = await this.sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: `${sheetName}!${columnaLetra}2:${columnaLetra}`,
-      });
-  
-      const valores = valoresResponse.data.values || [];
-      const ultimoNumero = valores.length ? parseInt(valores[valores.length - 1][0]) || 0 : 0;
-      const nuevoNumero = ultimoNumero + 1;
-  
-      const nuevaFila = valores.length + 2;
-      await this.sheets.spreadsheets.values.update({
-          spreadsheetId,
-          range: `${sheetName}!${columnaLetra}${nuevaFila}`,
-          valueInputOption: 'RAW',
-          requestBody: {
-              values: [[nuevoNumero]],
-          },
-      });
-  
-      return nuevoNumero;
-  }
-
 
   async exportSheetAsPDF(spreadsheetId: string): Promise<Buffer> {
     const auth = new google.auth.JWT(
@@ -724,45 +661,7 @@ export class InsRegistroEntradaService {
     });
   }
 
-  // Nuevo método para enviar a múltiples encargados
-  private async sendEmailToManagers(
-    pdfBuffer: Buffer,
-    filename: string,
-    emails: string[],
-    placa: string,
-    conductor: string,
-    sucursal: string
-  ) {
-    const transporter = nodemailer.createTransport(mailerConfig.transport);
-  
-    for (const email of emails) {
-      try {
-        const mailOptions = {
-          from: mailerConfig.transport.auth.user,
-          to: email,
-          subject: `Inspección Vehicular Entrada - ${placa}`,
-          text: `Se ha registrado una inspección de entrada para el vehículo con placa ${placa}.\n\n` +
-                `Conductor: ${conductor}\n` +
-                `Sucursal: ${sucursal}\n\n` +
-                `Adjunto encontrará el reporte completo de inspección.`,
-          attachments: [
-            {
-              filename: filename,
-              content: pdfBuffer,
-            },
-          ],
-        };
-  
-        await transporter.sendMail(mailOptions);
-        console.log(`Correo enviado exitosamente a ${email}`);
-      } catch (error) {
-        console.error(`Error al enviar correo a ${email}:`, error);
-        // Continuamos con los siguientes correos aunque falle uno
-      }
-    }
-  }
-
-async sendEmail(pdfBuffer: Buffer, recipientEmail: string, uniqueIdentifier: string) {
+  async sendEmail(pdfBuffer: Buffer, recipientEmail: string, uniqueIdentifier: string) {
 
     const transporter = nodemailer.createTransport(mailerConfig.transport);
 
