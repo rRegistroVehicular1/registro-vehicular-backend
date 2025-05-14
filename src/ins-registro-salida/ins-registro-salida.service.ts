@@ -32,6 +32,7 @@ export class InsRegistroSalidaService {
   }
 
   private normalizeTiresData(llantas: any[]): any[] {
+    console.log("Llantas antes de normalizar:", llantas); // ← Debe ser un array válido
     // Crea un array con 10 posiciones (para llanta1 a llanta10)
     const normalized = Array(10).fill(null);
     
@@ -39,21 +40,19 @@ export class InsRegistroSalidaService {
     const indexMap = {
       1: 0,   // llanta1 (delantera izquierda)
       2: 1,   // llanta2 (delantera derecha)
-      3: 2,
-      4: 3,
       7: 6,   // llanta3 (trasera izquierda)
       8: 7,   // llanta4 (extra trasera izquierda)
       5: 4,   // llanta5 (trasera derecha)
-      6: 5,   // llanta6 (extra trasera derecha)
-      9: 8,
-      10: 9
+      6: 5   // llanta6 (extra trasera derecha)
     };
 
     llantas.forEach(llanta => {
-      if (indexMap[llanta.id] !== undefined) {
+      if (llanta && indexMap[llanta.id] !== undefined) {
         normalized[indexMap[llanta.id]] = llanta;
       }
     });
+
+    console.log("Llantas normalizadas:", normalized); // ← Debe tener objetos en posiciones correctas
     
     return normalized;
   }
