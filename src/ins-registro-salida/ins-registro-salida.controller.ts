@@ -32,6 +32,9 @@ export class InsRegistroSalidaController {
     } = body;
 
     const estadoSalida = "salida";
+    const llantasArray = Array.isArray(llantas) ? llantas: [];
+
+    const todasLlantas = [...llantasArray];
 
     const result = await this.InsRegistroSalidaService.handleData(
       placa,
@@ -40,7 +43,7 @@ export class InsRegistroSalidaController {
       tipoVehiculo,
       odometroSalida,
       estadoSalida, 
-      llantas,
+      todasLlantas,
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
