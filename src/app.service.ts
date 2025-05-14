@@ -14,6 +14,20 @@ export class AppService {
     this.initializeAuth();
   }
 
+  private sucursalEmails = {
+    "(SU01) Casa Matriz Mañanitas": ["vehicularregistro526@gmail.com"],
+    "(SU02) Chiriquí": ["vehicularregistro526@gmail.com"],
+    "(SU03) Chorrera": ["vehicularregistro526@gmail.com"],
+    "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com"],
+    "(SU05) Colón": ["vehicularregistro526@gmail.com"],
+    "(SU08) Aguadulce": ["beto.asprilla@gmail.com"],
+    "(SU09) Los Santos": ["lasprilla344@gmail.com"]
+  };
+
+  getEmailsForSucursal(sucursal: string): string[] {
+    return this.sucursalEmails[sucursal] || [];
+  }
+  
   private initializeAuth() {
     const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
