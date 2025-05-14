@@ -592,6 +592,10 @@ export class InsRegistroEntradaService {
     const sheetName = 'Hoja 1';
 
     try {
+
+      // Normalizar el nombre de la sucursal (eliminar espacios extras)
+      const sucursalNormalizada = sucursal.trim();
+      
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range: `${sheetName}!A1:Z1`,
@@ -599,9 +603,15 @@ export class InsRegistroEntradaService {
 
       const encabezados = response.data.values[0];
 
-      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursal.trim().toLowerCase());
+      if (!encabezados) {
+            throw new Error('No se encontraron encabezados en la hoja de cálculo');
+        }
+
+      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursalNormalizada.toLowerCase());
       if (columnaIndex === -1) {
-        throw new Error(`Sucursal ${sucursal} no encontrada en el encabezado.`);
+        // Listar las sucursales disponibles para ayudar en debugging
+        const sucursalesDisponibles = encabezados.map((s: string) => `"${s}"`).join(', ');
+        throw new Error(`Sucursal ${sucursalNormalizada} no encontrada en el encabezado. Sucursales disponibles: ${sucursalesDisponibles}`);
       }
 
       const columnaLetra = String.fromCharCode(65 + columnaIndex);
@@ -626,7 +636,7 @@ export class InsRegistroEntradaService {
         },
       });
 
-      console.log(`Nuevo número consecutivo para ${sucursal}: ${nuevoNumero}`);
+      console.log(`Nuevo número consecutivo para ${sucursalNormalizada}: ${nuevoNumero}`);
       return nuevoNumero;
     } catch (error) {
       console.error('Error al generar número consecutivo:', error);
