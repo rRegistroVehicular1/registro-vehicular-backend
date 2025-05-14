@@ -39,8 +39,7 @@ export class InsRegistroSalidaService {
     tipoVehiculo: string,
     odometroSalida: string,
     estadoSalida: string,
-    llantasParte1: any[],
-    llantasParte2: any[],
+    llantas: any[],
     observacionGeneralLlantas: string,
     fluidos: any[],
     observacionGeneralFluido: string,
@@ -77,8 +76,7 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      llantasParte1 = this.processJSON(llantasParte1);
-      llantasParte2 = this.processJSON(llantasParte2);
+      llantas = this.processJSON(llantasParte1);
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
@@ -87,8 +85,7 @@ export class InsRegistroSalidaService {
       dasCarroceria = this.processJSON(dasCarroceria);
 
       const arrays = this.initializeArrays({
-        llantasParte1,
-        llantasParte2,
+        llantas,
         fluidos,
         parametrosVisuales,
         luces,
@@ -159,8 +156,7 @@ export class InsRegistroSalidaService {
   }
 
   private initializeArrays({
-    llantasParte1,
-    llantasParte2,
+    llantas,
     fluidos,
     parametrosVisuales,
     luces,
@@ -169,16 +165,16 @@ export class InsRegistroSalidaService {
     dasCarroceria,
   }: any) {
     return {
-      llanta1: llantasParte1[0],
-      llanta2: llantasParte1[1],
-      llanta3: llantasParte1[2],
-      llanta4: llantasParte1[3],
-      llanta5: llantasParte1[4],
-      llanta6: llantasParte2[0],
-      llanta7: llantasParte2[1],
-      llanta8: llantasParte2[2],
-      llanta9: llantasParte2[3],
-      llanta10: llantasParte2[4],
+      llanta1: llantas[0],
+      llanta2: llantas[1],
+      llanta3: llantas[2],
+      llanta4: llantas[3],
+      llanta5: llantas[4],
+      llanta6: llantas[5],
+      llanta7: llantas[6],
+      llanta8: llantas[7],
+      llanta9: llantas[8],
+      llanta10: llantas[9],
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
