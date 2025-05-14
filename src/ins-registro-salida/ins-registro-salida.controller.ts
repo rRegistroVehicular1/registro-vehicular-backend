@@ -33,9 +33,22 @@ export class InsRegistroSalidaController {
 
     const estadoSalida = "salida";
     console.log("Datos recibidos - Llantas:", body.llantas); // ← Verifica aquí
-    const llantasArray = Array.isArray(body.llantas) ? body.llantas: [];
-    console.log("Llantas procesadas:", llantasArray); // ← Debe ser un array
+    let llantasArray : any [] = [];
+    try {
+      llantasArray = typeof body.llantas === 'string' 
+        ? JSON.parse(body.llantas) 
+        : body.llantas;
+      
+      if (!Array.isArray(llantasArray)) {
+        throw new Error("Llantas no es un array válido");
+      }
+    } catch (error) {
+      console.error("Error al parsear llantas:", error);
+      llantasArray = []; // Fallback seguro
+    }
 
+    console.log("Llantas procesadas (parsed):", llantasArray); // Debug
+    
     const todasLlantas = [...llantasArray];
 
     const result = await this.InsRegistroSalidaService.handleData(
