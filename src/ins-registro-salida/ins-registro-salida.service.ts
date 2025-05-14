@@ -47,7 +47,7 @@ export class InsRegistroSalidaService {
     };
 
     llantas.forEach(llanta => {
-      if (llanta && indexMap[llanta.id] !== undefined) {
+      if (llanta?.id !== undefined && indexMap[llanta.id] !== undefined) {
         normalized[indexMap[llanta.id]] = llanta;
       }
     });
@@ -174,10 +174,10 @@ export class InsRegistroSalidaService {
         return JSON.parse(data);
       } catch (error) {
         console.error('Error al analizar la cadena JSON:', error);
-        return null;
+        return [];
       }
     }
-    return data;
+    return Array.isArray(data) ? data : [];
   }
 
   private initializeArrays({
