@@ -32,7 +32,9 @@ export class InsRegistroSalidaController {
     } = body;
 
     const estadoSalida = "salida";
-    const llantasArray = Array.isArray(llantas) ? llantas: [];
+    console.log("Datos recibidos - Llantas:", body.llantas); // ← Verifica aquí
+    const llantasArray = Array.isArray(body.llantas) ? body.llantas: [];
+    console.log("Llantas procesadas:", llantasArray); // ← Debe ser un array
 
     const todasLlantas = [...llantasArray];
 
