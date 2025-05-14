@@ -40,10 +40,10 @@ export class InsRegistroSalidaService {
     const indexMap = {
       1: 0,   // llanta1 (delantera izquierda)
       2: 1,   // llanta2 (delantera derecha)
-      7: 6,   // llanta3 (trasera izquierda)
-      8: 7,   // llanta4 (extra trasera izquierda)
       5: 4,   // llanta5 (trasera derecha)
       6: 5   // llanta6 (extra trasera derecha)
+      7: 6,   // llanta3 (trasera izquierda)
+      8: 7,   // llanta4 (extra trasera izquierda)
     };
 
     llantas.forEach(llanta => {
