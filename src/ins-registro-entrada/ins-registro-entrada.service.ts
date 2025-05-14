@@ -551,18 +551,41 @@ export class InsRegistroEntradaService {
     const sheetName = 'Hoja 1';
 
     try {
+      // 1. Primero normalizamos el nombre de la sucursal
+      const sucursalNormalizada = sucursal.trim();
+
+      // 2. Obtenemos los encabezados
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range: `${sheetName}!A1:Z1`,
       });
 
+      if (!response.data.values || response.data.values.length === 0) {
+            throw new Error('No se encontraron encabezados en la hoja.');
+        }
+      
       const encabezados = response.data.values[0];
 
-      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursal.trim().toLowerCase());
+      // 3. Buscamos coincidencia flexible
+      const columnaIndex = encabezados.findIndex((columna: string) => 
+        columna && typeof columna === 'string' && 
+        columna.trim().toLowerCase() === sucursalNormalizada.toLowerCase());
+      
       if (columnaIndex === -1) {
-        throw new Error(`Sucursal ${sucursal} no encontrada en el encabezado.`);
+          // Intentamos buscar sin el código (SUXX)
+          const nombreSucursal = sucursalNormalizada.replace(/\(SU\d+\)\s*/i, '').trim();
+          const columnaIndexAlternativo = encabezados.findIndex((columna: string) => 
+              columna && typeof columna === 'string' && 
+              columna.trim().toLowerCase().includes(nombreSucursal.toLowerCase())
+          );
+            
+          if (columnaIndexAlternativo === -1) {
+              throw new Error(`Sucursal "${sucursalNormalizada}" no encontrada. Encabezados disponibles: ${encabezados.join(', ')}`);
+          }
+          return this.procesarColumnaConsecutivos(spreadsheetId, sheetName, columnaIndexAlternativo);
       }
-
+      return this.procesarColumnaConsecutivos(spreadsheetId, sheetName, columnaIndex);
+      
       const columnaLetra = String.fromCharCode(65 + columnaIndex);
 
       const valoresResponse = await this.sheets.spreadsheets.values.get({
@@ -592,6 +615,33 @@ export class InsRegistroEntradaService {
       throw new Error('No se pudo generar el número consecutivo.');
     }
   }
+
+  
+  private async procesarColumnaConsecutivos(spreadsheetId: string, sheetName: string, columnaIndex: number) {
+      const columnaLetra = String.fromCharCode(65 + columnaIndex);
+  
+      const valoresResponse = await this.sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range: `${sheetName}!${columnaLetra}2:${columnaLetra}`,
+      });
+  
+      const valores = valoresResponse.data.values || [];
+      const ultimoNumero = valores.length ? parseInt(valores[valores.length - 1][0]) || 0 : 0;
+      const nuevoNumero = ultimoNumero + 1;
+  
+      const nuevaFila = valores.length + 2;
+      await this.sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `${sheetName}!${columnaLetra}${nuevaFila}`,
+          valueInputOption: 'RAW',
+          requestBody: {
+              values: [[nuevoNumero]],
+          },
+      });
+  
+      return nuevoNumero;
+  }
+
 
   async exportSheetAsPDF(spreadsheetId: string): Promise<Buffer> {
     const auth = new google.auth.JWT(
