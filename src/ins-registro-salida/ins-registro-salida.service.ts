@@ -31,6 +31,29 @@ export class InsRegistroSalidaService {
       }
   }
 
+  private normalizeTiresData(llantas: any[]): any[] {
+    // Crea un array con 10 posiciones (para llanta1 a llanta10)
+    const normalized = Array(10).fill(null);
+    
+    // Mapeo de IDs de llantas a posiciones en el array
+    const indexMap = {
+      1: 0,   // llanta1 (delantera izquierda)
+      2: 1,   // llanta2 (delantera derecha)
+      7: 2,   // llanta3 (trasera izquierda)
+      8: 3,   // llanta4 (extra trasera izquierda)
+      5: 4,   // llanta5 (trasera derecha)
+      6: 5    // llanta6 (extra trasera derecha)
+      // 7-10: null (no aplican para tu caso)
+    };
+
+    llantas.forEach(llanta => {
+      if (indexMap[llanta.id] !== undefined) {
+        normalized[indexMap[llanta.id]] = llanta;
+      }
+    });
+    
+    return normalized;
+  }
 
   async handleData(
     placa: string,
@@ -76,7 +99,7 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      llantas = this.processJSON(llantas);
+      llantas = this.normalizeTiresData(this.processJSON(llantas));
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
