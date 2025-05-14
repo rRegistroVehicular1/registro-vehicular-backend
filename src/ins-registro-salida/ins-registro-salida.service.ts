@@ -19,18 +19,16 @@ export class InsRegistroSalidaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth })
   }
 
-  // Modifica la función validateTires:
-  private validateTires(tipoVehiculo: string, llantasParte1: any[], llantasParte2: any[]): void {
-    const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
-    
-    const todasLlantas = [...llantasParte1, ...llantasParte2];
-    const idsEnviados = todasLlantas.filter(llanta => llanta?.id).map(llanta => llanta.id);
-  
-    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-    
-    if (idsInvalidos.length > 0) {
-      throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
-    }
+  //Función validateTires:
+  private validateTires(tipoVehiculo: string, llantas: any[]): void {
+      const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
+      const idsEnviados = llantas.map(llanta => llanta.id);
+      
+      const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+      
+      if (idsInvalidos.length > 0) {
+          throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
+      }
   }
 
 
@@ -58,7 +56,7 @@ export class InsRegistroSalidaService {
 
     try {
       // 1. Primero validamos las llantas (nueva línea a agregar)
-      this.validateTires(tipoVehiculo, llantasParte1, llantasParte2);
+      this.validateTires(tipoVehiculo, llantas);
       
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
