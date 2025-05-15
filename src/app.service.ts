@@ -25,7 +25,8 @@ export class AppService {
     "(SU09) Los Santos": ["lasprilla344@gmail.com"]
   };
 
-  getEmailsForSucursal(sucursal: string): string[] {
+  // Método para obtener correos por sucursal
+  getEmailsBySucursal(sucursal: string): string[] {
     return this.sucursalEmails[sucursal] || [];
   }
   
