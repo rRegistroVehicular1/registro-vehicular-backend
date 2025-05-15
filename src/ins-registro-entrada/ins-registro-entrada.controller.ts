@@ -20,7 +20,7 @@ export class InsRegistroEntradaController {
   @UseInterceptors(FileInterceptor('documento'))
   async register(@Body() body: any) {
     try {
-      const { revisiones, observacion, lastPlacaInfo, odometro } = body;
+      const { revisiones, observacion, lastPlacaInfo, odometro, sucursal } = body;
       
       if (!lastPlacaInfo) {
         throw new BadRequestException('Se requiere lastPlacaInfo');
@@ -30,7 +30,8 @@ export class InsRegistroEntradaController {
         revisiones,
         observacion,
         lastPlacaInfo,
-        odometro
+        odometro,
+        sucursal
       );
     } catch (error) {
       throw new HttpException(
