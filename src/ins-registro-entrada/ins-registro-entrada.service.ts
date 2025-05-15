@@ -353,7 +353,7 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
         { range: 'Hoja1!I9', values: [[placa]] },
         { range: 'Hoja1!D9', values: [[nombreConductor.toUpperCase()]] },
-        { range: 'Hoja1!C4', values: [[sucursal]] },
+        { range: 'Hoja1!C4', values: [[sucursal.toUpperCase()]] },
         { range: 'Hoja1!H10', values: [[tipoVehiculo.toUpperCase()]] },
         { range: 'Hoja1!D12', values: [[odometro]] },
         { range: 'Hoja1!I12', values: [[odometroEntrada]] },
