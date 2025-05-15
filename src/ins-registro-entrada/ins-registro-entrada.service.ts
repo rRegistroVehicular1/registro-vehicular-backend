@@ -103,7 +103,16 @@ export class InsRegistroEntradaService {
 
       const rowData = await this.getRowFromSheet(rowNumber);
 
+      if (!sucursal) {
+        throw new Error('El nombre de la sucursal es requerido');
+      }
+      
       const recipientEmails = this.appService.getEmailsBySucursal(sucursal);
+
+      if (!Array.isArray(recipientEmails)) {
+        console.error('Los correos de la sucursal no son un array válido:', recipientEmails);
+        throw new Error('Configuración de correos inválida');
+      }
 
       if (!recipientEmails || recipientEmails.length === 0) {
         console.warn(`No se encontraron correos para la sucursal: ${sucursal}`);
