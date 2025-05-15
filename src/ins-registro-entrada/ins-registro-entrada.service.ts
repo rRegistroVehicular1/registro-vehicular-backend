@@ -22,7 +22,6 @@ export class InsRegistroEntradaService {
     observacion: string,
     lastPlacaInfo: string, 
     odometro: string,
-    sucursal: string
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
@@ -102,26 +101,6 @@ export class InsRegistroEntradaService {
       console.log('Datos enviados correctamente a Google Sheets.');
 
       const rowData = await this.getRowFromSheet(rowNumber);
-
-      if (!sucursal) {
-        throw new Error('El nombre de la sucursal es requerido');
-      }
-      
-      const recipientEmails = this.appService.getEmailsBySucursal(sucursal);
-
-      if (!Array.isArray(recipientEmails)) {
-        console.error('Los correos de la sucursal no son un array válido:', recipientEmails);
-        throw new Error('Configuración de correos inválida');
-      }
-
-      if (!recipientEmails || recipientEmails.length === 0) {
-        console.warn(`No se encontraron correos para la sucursal: ${sucursal}`);
-        // Puedes decidir si quieres continuar o lanzar un error aquí
-      }
-      
-      if (recipientEmails && recipientEmails.length > 0) {
-        await this.sendEmail(pdfBuffer, recipientEmails, originalname);
-      }
 
       return {
         success: true,
@@ -373,9 +352,9 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!C6', values: [[nuevoNumero]] },
         { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
         { range: 'Hoja1!I9', values: [[placa]] },
-        { range: 'Hoja1!D9', values: [[nombreConductor.toUpperCase()]] },
-        { range: 'Hoja1!C4', values: [[sucursal.toUpperCase()]] },
-        { range: 'Hoja1!H10', values: [[tipoVehiculo.toUpperCase()]] },
+        { range: 'Hoja1!D9', values: [[nombreConductor]] },
+        { range: 'Hoja1!C4', values: [[sucursal]] },
+        { range: 'Hoja1!H10', values: [[tipoVehiculo]] },
         { range: 'Hoja1!D12', values: [[odometro]] },
         { range: 'Hoja1!I12', values: [[odometroEntrada]] },
         { range: 'Hoja1!C11', values: [[HoraSalida]] },
@@ -682,14 +661,14 @@ export class InsRegistroEntradaService {
     });
   }
 
-  async sendEmail(pdfBuffer: Buffer, recipientEmails: string[], uniqueIdentifier: string) {
+  async sendEmail(pdfBuffer: Buffer, recipientEmail: string, uniqueIdentifier: string) {
 
     const transporter = nodemailer.createTransport(mailerConfig.transport);
 
     const mailOptions = {
       from: mailerConfig.transport.auth.user,
-      to: recipientEmails.join(', '),
-      subject: 'Reporte de inspección Vehicular - ${fileName}',
+      to: recipientEmail,
+      subject: 'Reporte de inspección de salida',
       text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
       attachments: [
         {
@@ -700,7 +679,6 @@ export class InsRegistroEntradaService {
     };
 
     return transporter.sendMail(mailOptions);
-    console.log(`Correo enviado a: ${recipientEmails.join(', ')}`);
   }
 
   async getLastOdometro(placa: string): Promise<number> {
