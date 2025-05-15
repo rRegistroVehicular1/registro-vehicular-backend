@@ -22,6 +22,7 @@ export class InsRegistroEntradaService {
     observacion: string,
     lastPlacaInfo: string, 
     odometro: string,
+    sucursal: string
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
@@ -101,6 +102,11 @@ export class InsRegistroEntradaService {
       console.log('Datos enviados correctamente a Google Sheets.');
 
       const rowData = await this.getRowFromSheet(rowNumber);
+
+      const recipientEmails = this.appService.getEmailsBySucursal(sucursal);
+      if (recipientEmails.length > 0) {
+        await this.sendEmail(pdfBuffer, recipientEmails, originalname);
+      }
 
       return {
         success: true,
@@ -661,13 +667,13 @@ export class InsRegistroEntradaService {
     });
   }
 
-  async sendEmail(pdfBuffer: Buffer, recipientEmail: string, uniqueIdentifier: string) {
+  async sendEmail(pdfBuffer: Buffer, recipientEmail: string[], uniqueIdentifier: string) {
 
     const transporter = nodemailer.createTransport(mailerConfig.transport);
 
     const mailOptions = {
       from: mailerConfig.transport.auth.user,
-      to: recipientEmail,
+      to: recipientEmails.join(', '),
       subject: 'Reporte de inspección de salida',
       text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
       attachments: [
