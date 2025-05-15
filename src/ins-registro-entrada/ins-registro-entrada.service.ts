@@ -104,7 +104,13 @@ export class InsRegistroEntradaService {
       const rowData = await this.getRowFromSheet(rowNumber);
 
       const recipientEmails = this.appService.getEmailsBySucursal(sucursal);
-      if (recipientEmails.length > 0) {
+
+      if (!recipientEmails || recipientEmails.length === 0) {
+        console.warn(`No se encontraron correos para la sucursal: ${sucursal}`);
+        // Puedes decidir si quieres continuar o lanzar un error aquí
+      }
+      
+      if (recipientEmails && recipientEmails.length > 0) {
         await this.sendEmail(pdfBuffer, recipientEmails, originalname);
       }
 
@@ -667,14 +673,14 @@ export class InsRegistroEntradaService {
     });
   }
 
-  async sendEmail(pdfBuffer: Buffer, recipientEmail: string[], uniqueIdentifier: string) {
+  async sendEmail(pdfBuffer: Buffer, recipientEmails: string[], uniqueIdentifier: string) {
 
     const transporter = nodemailer.createTransport(mailerConfig.transport);
 
     const mailOptions = {
       from: mailerConfig.transport.auth.user,
       to: recipientEmails.join(', '),
-      subject: 'Reporte de inspección de salida',
+      subject: 'Reporte de inspección Vehicular - ${fileName}',
       text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
       attachments: [
         {
@@ -685,6 +691,7 @@ export class InsRegistroEntradaService {
     };
 
     return transporter.sendMail(mailOptions);
+    console.log(`Correo enviado a: ${recipientEmails.join(', ')}`);
   }
 
   async getLastOdometro(placa: string): Promise<number> {
