@@ -510,6 +510,7 @@ export class InsRegistroEntradaService {
       const nameText = { fechaFormatoPDF, placa, nombreConductor, sucursal };
 
       const pdfBuffer: Buffer = await this.exportSheetAsPDF(spreadsheetrev3);
+      //const sucursal1 = nameText.sucursal.match(/\((.*?)\)/)?.[1] || '';
       const sucursal1 = sucursal.match(/\((.*?)\)/)?.[1]?.trim() || 'ND';
 
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}.pdf`;
@@ -522,68 +523,13 @@ export class InsRegistroEntradaService {
 
       console.log('Archivo PDF subido a Google Drive');
 
-      // Obtener correos de encargados y enviar el PDF
-      const emailsEncargados = this.appService.getEmailsForSucursal(sucursal);
-
-      if (emailsEncargados.length > 0) {
-        await this.enviarCorreoEncargados(
-          pdfBuffer, 
-          originalname,
-          emailsEncargados,
-          placa,
-          nombreConductor,
-          sucursal
-        );
-      }
-
-      // Envío original al correo fijo (mantenemos ambos si es necesario)
       //const recipientEmail = 'vehicularregistro526@gmail.com';
       const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
       await this.sendEmail(pdfBuffer, recipientEmail, originalname);
 
-      return {
-        success: true,
-        message: 'Datos procesados y almacenados correctamente en Google Sheets',
-        rowNumber: rowNumber,
-        timestamp: new Date().toISOString(),
-        updatedRow: rowData,
-      };
     } catch (error) {
       console.error('Error al obtener los datos de la fila de Google Sheets:', error.response?.data || error.message || error);
       throw new Error('Error al obtener los datos de la fila de Google Sheets');
-    }
-  }
-
-  // Nuevo método para enviar correos a encargados
-  private async enviarCorreoEncargados(
-    pdfBuffer: Buffer,
-    nombreArchivo: string,
-    emails: string[],
-    placa: string,
-    conductor: string,
-    sucursal: string
-  ) {
-    const transporter = nodemailer.createTransport(mailerConfig.transport);
-
-    for (const email of emails) {
-      try {
-        const mailOptions = {
-          from: mailerConfig.transport.auth.user,
-          to: email,
-          subject: `Registro de Inspección Vehicular - ${placa}`,
-          text: `Se ha registrado una nueva inspección vehicular de entrada.\n\nDetalles:\nPlaca: ${placa}\nConductor: ${conductor}\nSucursal: ${sucursal}\n\nAdjunto encontrará el reporte completo.`,
-          attachments: [{
-            filename: nombreArchivo,
-            content: pdfBuffer,
-          }],
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log(`Correo enviado correctamente a ${email}`);
-      } catch (error) {
-        console.error(`Error al enviar correo a ${email}:`, error);
-        // Continuar con los siguientes correos aunque falle uno
-      }
     }
   }
 
@@ -592,10 +538,6 @@ export class InsRegistroEntradaService {
     const sheetName = 'Hoja 1';
 
     try {
-
-      // Normalizar el nombre de la sucursal (eliminar espacios extras)
-      const sucursalNormalizada = sucursal.trim();
-      
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range: `${sheetName}!A1:Z1`,
@@ -603,15 +545,9 @@ export class InsRegistroEntradaService {
 
       const encabezados = response.data.values[0];
 
-      if (!encabezados) {
-            throw new Error('No se encontraron encabezados en la hoja de cálculo');
-        }
-
-      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursalNormalizada.toLowerCase());
+      const columnaIndex = encabezados.findIndex((columna: string) => columna.trim().toLowerCase() === sucursal.trim().toLowerCase());
       if (columnaIndex === -1) {
-        // Listar las sucursales disponibles para ayudar en debugging
-        const sucursalesDisponibles = encabezados.map((s: string) => `"${s}"`).join(', ');
-        throw new Error(`Sucursal ${sucursalNormalizada} no encontrada en el encabezado. Sucursales disponibles: ${sucursalesDisponibles}`);
+        throw new Error(`Sucursal ${sucursal} no encontrada en el encabezado.`);
       }
 
       const columnaLetra = String.fromCharCode(65 + columnaIndex);
@@ -636,7 +572,7 @@ export class InsRegistroEntradaService {
         },
       });
 
-      console.log(`Nuevo número consecutivo para ${sucursalNormalizada}: ${nuevoNumero}`);
+      console.log(`Nuevo número consecutivo para ${sucursal}: ${nuevoNumero}`);
       return nuevoNumero;
     } catch (error) {
       console.error('Error al generar número consecutivo:', error);
