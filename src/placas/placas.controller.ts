@@ -11,7 +11,7 @@ export class PlacasController {
   async getData() {
     try {
       const data = await this.placasService.getPlacasFromSheet();
-      return data;
+      return data.filter(item => item.tipo !== '');
     } catch (error) {
       console.error('Error en controller:', error);
       return []; // Siempre devuelve array aunque falle
