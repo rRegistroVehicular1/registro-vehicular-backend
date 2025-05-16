@@ -33,23 +33,35 @@ export class PlacasService {
       // Procesamiento robusto
       const placas = data.values
         .flat() // Convierte matriz en array unidimensional
-        .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
-        .filter(item => item.length > 0); // Filtra strings vacíos
+        .map(row => ({
+                placa: row[0].toString().trim(),
+                tipo: this.normalizarTipoVehiculo(row[1].toString().trim())
+            })); // Convierte a string y limpia
+        .filter(row => row.length >= 2 && row[0] && row[1]); // Filtra strings vacíos
   
       console.log('Placas obtenidas:', placas); // Para diagnóstico
       
-      return data.values
-        .filter(row => row.length >= 2 && row[0] && row[1]) // Filtra filas válidas
-        .map(row => ({
-          placa: row[0].toString().trim(),
-          tipo: row[1].toString().trim().toLowerCase()
-        }));
+      return placas;
       
     } catch (error) {
       console.error('Error al obtener placas:', error);
       return []; // Fallback seguro
     }
   }
+
+  private normalizarTipoVehiculo(tipo: string): string {
+    // Convertir a minúsculas y manejar posibles variaciones
+    const tipoLower = tipo.toLowerCase();
+    
+    // Mapeo de posibles valores a los valores estándar usados en la app
+    if (tipoLower.includes('sedan') || tipoLower === 'sedán') return 'sedan';
+    if (tipoLower.includes('pickup')) return 'pickup';
+    if (tipoLower.includes('panel')) return 'panel';
+    if (tipoLower.includes('camion') || tipoLower.includes('camión')) return 'camion';
+    
+    // Valor por defecto si no coincide (puedes ajustarlo)
+    return tipoLower;
+}
 
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
