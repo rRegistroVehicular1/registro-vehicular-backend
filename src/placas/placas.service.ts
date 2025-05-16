@@ -15,9 +15,9 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasFromSheet(): Promise<{placa: string, tipo: string}[]> {
+  async getPlacasFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:D'; // Columnas C (placas) y D (tipos de vehiculos)
+    const range = 'Lista de Placas!C2:C';
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -32,17 +32,11 @@ export class PlacasService {
 
       // Procesamiento robusto
       const placas = data.values
-        .filter(row => row.length >= 2 && row[0] && row[1]) // Filtra filas válidas
-        .map(row => {
-          const tipoNormalizado = this.normalizarTipoVehiculo(row[1].toString().trim());
-          return {
-            placa: row[0].toString().trim(),
-            tipo: tipoNormalizado
-          };
-        });
+        .flat() // Convierte matriz en array unidimensional
+        .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
+        .filter(item => item.length > 0); // Filtra strings vacíos
   
       console.log('Placas obtenidas:', placas); // Para diagnóstico
-      
       return placas;
       
     } catch (error) {
@@ -50,24 +44,6 @@ export class PlacasService {
       return []; // Fallback seguro
     }
   }
-
-  private normalizarTipoVehiculo(tipo: string): string {
-    // Convertir a minúsculas y manejar posibles variaciones
-    const tipoLower = tipo.toLowerCase();
-    
-    // Mapeo de posibles valores a los usados en la aplicación
-    const tiposValidos: Record<string, string> = {
-      'sedan': 'sedan',
-      'sedán': 'sedan',
-      'pickup': 'pickup',
-      'panel': 'panel',
-      'camion': 'camion',
-      'camión': 'camion'
-    };
-    
-    // Valor por defecto si no coincide (puedes ajustarlo)
-    return tiposValidos[tipoLower] || ''; // Devuelve cadena vacía si no coincide
-}
 
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
