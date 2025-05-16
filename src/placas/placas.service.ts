@@ -15,9 +15,9 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasFromSheet(): Promise<string[]> {
+  async getPlacasFromSheet(): Promise<{placa: string, tipo: string}[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:C';
+    const range = 'Lista de Placas!C2:D'; // Columnas C (placas) y D (tipos de vehiculos)
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -37,7 +37,13 @@ export class PlacasService {
         .filter(item => item.length > 0); // Filtra strings vacíos
   
       console.log('Placas obtenidas:', placas); // Para diagnóstico
-      return placas;
+      
+      return data.values
+        .filter(row => row.length >= 2 && row[0] && row[1]) // Filtra filas válidas
+        .map(row => ({
+          placa: row[0].toString().trim(),
+          tipo: row[1].toString().trim().toLowerCase()
+        }));
       
     } catch (error) {
       console.error('Error al obtener placas:', error);
