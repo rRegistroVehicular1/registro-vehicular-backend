@@ -351,7 +351,7 @@ export class InsRegistroEntradaService {
 
         { range: 'Hoja1!C6', values: [[nuevoNumero]] },
         { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
-        { range: 'Hoja1!I9', values: [[placa.upperCase()]] },
+        { range: 'Hoja1!I9', values: [[placa]] },
         { range: 'Hoja1!D9', values: [[nombreConductor.upperCase()]] },
         { range: 'Hoja1!C4', values: [[sucursal.upperCase()]] },
         { range: 'Hoja1!H10', values: [[tipoVehiculo.upperCase()]] },
