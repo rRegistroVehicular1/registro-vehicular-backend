@@ -21,6 +21,7 @@ export class HomeService {
     estado?: string;
     datoColumnaG?: string;
     rowIndex?: number;
+    placa?: string;
   }> {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:H';
@@ -84,6 +85,7 @@ export class HomeService {
         estado: lastRecord.estado || 'No especificado',
         datoColumnaG: lastRecord.datoColumnaG || 'Dato no disponible',
         rowIndex: lastRecord.rowIndex,
+        placa: placa
       };
 
     } catch (error) {
