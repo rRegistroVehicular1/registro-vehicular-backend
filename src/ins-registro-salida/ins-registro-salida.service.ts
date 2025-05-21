@@ -323,14 +323,14 @@ export class InsRegistroSalidaService {
         documentacion7?.nombre, documentacion7?.disponibleSi ? "sí" : "no",
         documentacion8?.nombre, documentacion8?.disponibleSi ? "sí" : "no",
         "",
-        "Daño 1", dasCarroceria1?.vista, dasCarroceria1?.rayones ? "sí" : "no", dasCarroceria1?.golpes ? "sí" : "no", dasCarroceria1?.quebrado ? "sí" : "no",
-        dasCarroceria1?.faltante ? "sí" : "no",
-        "Daño 2", dasCarroceria2?.vista, dasCarroceria2?.rayones ? "sí" : "no", dasCarroceria2?.golpes ? "sí" : "no", dasCarroceria2?.quebrado ? "sí" : "no",
-        dasCarroceria2?.faltante ? "sí" : "no",
-        "Daño 3", dasCarroceria3?.vista, dasCarroceria3?.rayones ? "sí" : "no", dasCarroceria3?.golpes ? "sí" : "no", dasCarroceria3?.quebrado ? "sí" : "no",
-        dasCarroceria3?.faltante ? "sí" : "no",
-        "Daño 4", dasCarroceria4?.vista, dasCarroceria4?.rayones ? "sí" : "no", dasCarroceria4?.golpes ? "sí" : "no", dasCarroceria4?.quebrado ? "sí" : "no",
-        dasCarroceria4?.faltante ? "sí" : "no"
+        "Daño 1", dasCarroceria1?.vista, dasCarroceria1?.rayones ? "X" : "no", dasCarroceria1?.golpes ? "/" : "no", dasCarroceria1?.quebrado ? "O" : "no",
+        dasCarroceria1?.faltante ? "*" : "no",
+        "Daño 2", dasCarroceria2?.vista, dasCarroceria2?.rayones ? "X" : "no", dasCarroceria2?.golpes ? "/" : "no", dasCarroceria2?.quebrado ? "0" : "no",
+        dasCarroceria2?.faltante ? "*" : "no",
+        "Daño 3", dasCarroceria3?.vista, dasCarroceria3?.rayones ? "X" : "no", dasCarroceria3?.golpes ? "/" : "no", dasCarroceria3?.quebrado ? "0" : "no",
+        dasCarroceria3?.faltante ? "*" : "no",
+        "Daño 4", dasCarroceria4?.vista, dasCarroceria4?.rayones ? "X" : "no", dasCarroceria4?.golpes ? "/" : "no", dasCarroceria4?.quebrado ? "0" : "no",
+        dasCarroceria4?.faltante ? "*" : "no"
       ],
     ];
   }
