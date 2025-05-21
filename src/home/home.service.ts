@@ -62,10 +62,17 @@ export class HomeService {
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
       if (matchingRows.length === 0) {
-        return { message: `La placa ${placa} no está registrada.` };
+        return { message: `La placa ${placa} no está registrada.`, placa : placa };
       }
 
       const lastRecord = matchingRows[0];
+
+      // Store the complete plate info in localStorage
+      localStorage.setItem('lastPlacaInfo', JSON.stringify({
+          placa,
+          rowIndex: lastRecord.rowIndex,
+          estado: lastRecord.estado
+      }));
 
       if (lastRecord.datoColumnaG === "entrada") {
         return { message: `La ${placa} ha ingresado a la plataforma.` };
