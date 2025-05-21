@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+eimport { Injectable } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 import { google } from 'googleapis';
 import axios from 'axios';
@@ -27,6 +27,8 @@ export class InsRegistroEntradaService {
 
     try {
 
+      const rowNumber = parseInt(lastPlacaInfo, 10);
+      
       // Validación básica existente
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
@@ -56,7 +58,7 @@ export class InsRegistroEntradaService {
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
 
-      const rowNumber = parseInt(lastPlacaInfo, 10);
+      
 
       // Operaciones en Google Sheets
       const startColumn = 'FG';
