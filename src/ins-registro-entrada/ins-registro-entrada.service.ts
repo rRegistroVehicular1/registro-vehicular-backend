@@ -681,8 +681,8 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometro(placa: string): Promise<number> {
-    if (!placa) return 0;
+  async getLastOdometro(placa: string): Promise<{ lastOdometro: number }> {
+    if (!placa) return { lastOdometro: 0 };
   
 
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
@@ -711,6 +711,7 @@ export class InsRegistroEntradaService {
             const fecha = new Date(correctedTimestamp);
             
             return {
+              odometroSalida: row[5] ? parseFloat(row[5]) : 0, // Column F
               odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
               fecha: fecha
             };
@@ -722,9 +723,18 @@ export class InsRegistroEntradaService {
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
       console.log(registrosVehiculo);
-     const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+      
+     /*const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
-      return ultimoOdometro;
+      return ultimoOdometro;*/
+
+      let ultimoOdometro = 0;
+      if (registrosVehiculo.length > 0) {
+        const ultimoRegistro = registrosVehiculo[0];
+        ultimoOdometro = Math.max(ultimoRegistro.odometroSalida, ultimoRegistro.odometroEntrada);
+      }
+  
+      return { lastOdometro: ultimoOdometro };
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
         message: error.message,
