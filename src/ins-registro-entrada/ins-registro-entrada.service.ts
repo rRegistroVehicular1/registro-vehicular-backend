@@ -476,7 +476,7 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!H67', values: [[dano4Obs3]] },
         { range: 'Hoja1!I67', values: [[dano4Obs4]] },
 
-        { range: 'Hoja1!E69', values: [[nombreConductor]] },
+        { range: 'Hoja1!E69', values: [[nombreConductor.toUpperCase()]] },
         { range: 'Hoja1!G75', values: [[revisionGolpes]] },
         { range: 'Hoja1!G76', values: [[revisionLlave]] },
         { range: 'Hoja1!G77', values: [[revisionBasura]] },
