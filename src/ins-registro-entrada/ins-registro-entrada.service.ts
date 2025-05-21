@@ -750,7 +750,8 @@ export class InsRegistroEntradaService {
         const ultimoRegistro = registrosVehiculo[0];
         ultimoOdometro = Math.max(ultimoRegistro.odometroSalida, ultimoRegistro.odometroEntrada);
       }
-  
+
+      console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       return { lastOdometro: ultimoOdometro };
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
