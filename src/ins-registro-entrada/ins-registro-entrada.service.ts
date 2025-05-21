@@ -759,5 +759,5 @@ export class InsRegistroEntradaService {
         stack: error.stack,
         response: error.response?.data
       });
-      return 0;
+      return { lastOdometro: 0 };
     }
