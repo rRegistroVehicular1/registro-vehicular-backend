@@ -36,6 +36,19 @@ export class InsRegistroEntradaService {
       if (isNaN(odometroNum) || odometroNum < 0) {
         throw new Error('El odómetro debe ser un número válido');
       }
+
+      const placaResponse = await this.sheets.spreadsheets.values.get({
+        auth: this.auth,
+        spreadsheetId,
+        range: `Hoja 1!B${rowNumber}`,
+      });
+      const placa = placaResponse.data.values?.[0]?.[0] || '';
+    
+      const { lastOdometro } = await this.getLastOdometro(placa);
+      
+      if (odometroNum <= lastOdometro) {
+        throw new Error(`El odómetro de entrada (${odometroNum}) debe ser mayor al último registro (${lastOdometro})`);
+      }
       
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
