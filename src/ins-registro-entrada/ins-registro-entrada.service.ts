@@ -26,11 +26,12 @@ export class InsRegistroEntradaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
     try {
+
       // Validación básica existente
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
       }
-  
+      
       // Validación de odómetro (NUEVO)
       const odometroNum = Number(odometro);
       if (isNaN(odometroNum) || odometroNum < 0) {
@@ -43,9 +44,10 @@ export class InsRegistroEntradaService {
         range: `Hoja 1!B${rowNumber}`,
       });
       const placa = placaResponse.data.values?.[0]?.[0] || '';
-    
+
+      //Obtiene la ultima lectura del odometro
       const { lastOdometro } = await this.getLastOdometro(placa);
-      
+
       if (odometroNum <= lastOdometro) {
         throw new Error(`El odómetro de entrada (${odometroNum}) debe ser mayor al último registro (${lastOdometro})`);
       }
