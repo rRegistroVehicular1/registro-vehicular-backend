@@ -30,13 +30,13 @@ export class InsRegistroEntradaService {
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
       }
-
+  
       // Validación de odómetro (NUEVO)
       const odometroNum = Number(odometro);
       if (isNaN(odometroNum) || odometroNum < 0) {
         throw new Error('El odómetro debe ser un número válido');
       }
-
+      
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
@@ -194,16 +194,16 @@ export class InsRegistroEntradaService {
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
       let año = partesFecha[2];
-
+      
       // Asegura año de 4 dígitos
       if (año.length === 2) {
           año = `20${año}`;
       } else if (año.length !== 4) {
           throw new Error(`Formato de año inválido: ${año}`);
       }
-
+      
       const fechaFormatoPDF = `${mes}${dia}${año}`; // MMDDAAAA
-
+      
       const placa = row[0][1];
       const nombreConductor = row[0][2];
       const sucursal = row[0][3];
@@ -351,7 +351,7 @@ export class InsRegistroEntradaService {
 
         { range: 'Hoja1!C6', values: [[nuevoNumero]] },
         { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
-        { range: 'Hoja1!I9', values: [[placa.toUpperCase()]] },
+        { range: 'Hoja1!I9', values: [[placa]] },
         { range: 'Hoja1!D9', values: [[nombreConductor.toUpperCase()]] },
         { range: 'Hoja1!C4', values: [[sucursal.toUpperCase()]] },
         { range: 'Hoja1!H10', values: [[tipoVehiculo.toUpperCase()]] },
@@ -459,24 +459,24 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!D61', values: [[dano1Obs1]] },
         { range: 'Hoja1!F61', values: [[dano1Obs2]] },
         { range: 'Hoja1!H61', values: [[dano1Obs3]] },
-        { range: 'Hoja1!I61', values: [[dano1Obs4]] },
+        { range: 'Hoja1!J61', values: [[dano1Obs4]] },
 
         { range: 'Hoja1!D63', values: [[dano2Obs1]] },
         { range: 'Hoja1!F63', values: [[dano2Obs2]] },
         { range: 'Hoja1!H63', values: [[dano2Obs3]] },
-        { range: 'Hoja1!I63', values: [[dano2Obs4]] },
+        { range: 'Hoja1!J63', values: [[dano2Obs4]] },
 
         { range: 'Hoja1!D65', values: [[dano3Obs1]] },
         { range: 'Hoja1!F65', values: [[dano3Obs2]] },
         { range: 'Hoja1!H65', values: [[dano3Obs3]] },
-        { range: 'Hoja1!I65', values: [[dano3Obs4]] },
+        { range: 'Hoja1!J65', values: [[dano3Obs4]] },
 
         { range: 'Hoja1!D67', values: [[dano4Obs1]] },
         { range: 'Hoja1!F67', values: [[dano4Obs2]] },
         { range: 'Hoja1!H67', values: [[dano4Obs3]] },
-        { range: 'Hoja1!I67', values: [[dano4Obs4]] },
+        { range: 'Hoja1!J67', values: [[dano4Obs4]] },
 
-        { range: 'Hoja1!E69', values: [[nombreConductor]] },
+        { range: 'Hoja1!E69', values: [[nombreConductor.toUpperCase()]] },
         { range: 'Hoja1!G75', values: [[revisionGolpes]] },
         { range: 'Hoja1!G76', values: [[revisionLlave]] },
         { range: 'Hoja1!G77', values: [[revisionBasura]] },
@@ -514,7 +514,7 @@ export class InsRegistroEntradaService {
       const sucursal1 = sucursal.match(/\((.*?)\)/)?.[1]?.trim() || 'ND';
 
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}.pdf`;
-
+      
       await this.uploadFileToDrive({
         originalname,
         mimetype: 'application/pdf',
@@ -683,11 +683,11 @@ export class InsRegistroEntradaService {
 
   async getLastOdometro(placa: string): Promise<number> {
     if (!placa) return 0;
-
+  
 
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:GH500';
-
+  
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -697,8 +697,8 @@ export class InsRegistroEntradaService {
       const rows = response.data.values || [];
       console.log('Registros encontrados:', rows.length);
       console.log(placa.toUpperCase());
-
-
+      
+      
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
@@ -709,7 +709,7 @@ export class InsRegistroEntradaService {
               '$3-$2-$1T$4'
             );
             const fecha = new Date(correctedTimestamp);
-
+            
             return {
               odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
               fecha: fecha
