@@ -9,12 +9,12 @@ export class InsRegistroEntradaController {
   constructor(private readonly insRegistroEntradaService: InsRegistroEntradaService) { }
 
   @Get('last-odometro')
-  async getLastOdometroEntrada(@Query('placa') placa: string) {
+  async getLastOdometro(@Query('placa') placa: string) {
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
-    const lastOdometro = await this.insRegistroEntradaService.getLastOdometroEntrada(placa);
-    return { lastOdometroEntrada: lastOdometro };
+    const lastOdometro = await this.insRegistroEntradaService.getLastOdometro(placa);
+    return { lastOdometro: lastOdometro };
   }
   
   @Post('register')
