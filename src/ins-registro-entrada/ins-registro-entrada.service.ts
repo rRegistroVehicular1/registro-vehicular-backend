@@ -352,9 +352,9 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!C6', values: [[nuevoNumero]] },
         { range: 'Hoja1!C10', values: [[fechaFormatoPDF]] },
         { range: 'Hoja1!I9', values: [[placa]] },
-        { range: 'Hoja1!D9', values: [[nombreConductor.toUpperCase()]] },
-        { range: 'Hoja1!C4', values: [[sucursal.toUpperCase()]] },
-        { range: 'Hoja1!H10', values: [[tipoVehiculo.toUpperCase()]] },
+        { range: 'Hoja1!D9', values: [[nombreConductor]] },
+        { range: 'Hoja1!C4', values: [[sucursal]] },
+        { range: 'Hoja1!H10', values: [[tipoVehiculo]] },
         { range: 'Hoja1!D12', values: [[odometro]] },
         { range: 'Hoja1!I12', values: [[odometroEntrada]] },
         { range: 'Hoja1!C11', values: [[HoraSalida]] },
@@ -476,7 +476,7 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!H67', values: [[dano4Obs3]] },
         { range: 'Hoja1!J67', values: [[dano4Obs4]] },
 
-        { range: 'Hoja1!E69', values: [[nombreConductor.toUpperCase()]] },
+        { range: 'Hoja1!E69', values: [[nombreConductor]] },
         { range: 'Hoja1!G75', values: [[revisionGolpes]] },
         { range: 'Hoja1!G76', values: [[revisionLlave]] },
         { range: 'Hoja1!G77', values: [[revisionBasura]] },
@@ -523,8 +523,8 @@ export class InsRegistroEntradaService {
 
       console.log('Archivo PDF subido a Google Drive');
 
-      const recipientEmail = 'vehicularregistro526@gmail.com';
-      //const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
+      //const recipientEmail = 'vehicularregistro526@gmail.com';
+      const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
       await this.sendEmail(pdfBuffer, recipientEmail, originalname);
 
     } catch (error) {
@@ -684,8 +684,9 @@ export class InsRegistroEntradaService {
   async getLastOdometro(placa: string): Promise<number> {
     if (!placa) return 0;
   
+
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!A2:GH';
+    const range = 'Hoja 1!A2:GH500';
   
     try {
       const response = await this.sheets.spreadsheets.values.get({
