@@ -10,12 +10,10 @@ export class InsRegistroEntradaController {
 
   @Get('last-odometro')
   async getLastOdometro(@Query('placa') placa: string) {
-    
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
-    const lastOdometro = await this.insRegistroEntradaService.getLastOdometro(placa);
-    return { lastOdometro: lastOdometro };
+    return this.insRegistroEntradaService.getLastOdometro(placa);
   }
   
   @Post('register')
