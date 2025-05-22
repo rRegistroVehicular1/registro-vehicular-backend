@@ -8,12 +8,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class InsRegistroEntradaController {
   constructor(private readonly insRegistroEntradaService: InsRegistroEntradaService) { }
 
-  @Get('last-odometro')
-  async getLastOdometro(@Query('placa') placa: string) {
+  @Get('last-odometro-entrada')
+  async getLastOdometroEntrada(@Query('placa') placa: string) {
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
-    return this.insRegistroEntradaService.getLastOdometro(placa);
+    const lastOdometro = await this.insRegistroEntradaService.getLastOdometroEntrada(placa);
+    return { lastOdometroEntrada: lastOdometro };
   }
   
   @Post('register')
