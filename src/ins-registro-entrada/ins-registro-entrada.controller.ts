@@ -8,7 +8,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class InsRegistroEntradaController {
   constructor(private readonly insRegistroEntradaService: InsRegistroEntradaService) { }
 
-  @Get('last-odometro-entrada')
+  @Get('last-odometro')
   async getLastOdometroEntrada(@Query('placa') placa: string) {
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
