@@ -26,39 +26,22 @@ export class InsRegistroEntradaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
     try {
-
-      const rowNumber = parseInt(lastPlacaInfo, 10);
-      
       // Validación básica existente
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
       }
-      
+
       // Validación de odómetro (NUEVO)
       const odometroNum = Number(odometro);
       if (isNaN(odometroNum) || odometroNum < 0) {
         throw new Error('El odómetro debe ser un número válido');
       }
 
-      const placaResponse = await this.sheets.spreadsheets.values.get({
-        auth: this.auth,
-        spreadsheetId,
-        range: `Hoja 1!B${rowNumber}`,
-      });
-      const placa = placaResponse.data.values?.[0]?.[0] || '';
-
-      //Obtiene la ultima lectura del odometro
-      const { lastOdometro } = await this.getLastOdometro(placa);
-
-      if (odometroNum <= lastOdometro) {
-        throw new Error(`El odómetro de entrada (${odometroNum}) debe ser mayor al último registro (${lastOdometro})`);
-      }
-      
       revisiones = this.processJSON(revisiones);
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
 
-      
+      const rowNumber = parseInt(lastPlacaInfo, 10);
 
       // Operaciones en Google Sheets
       const startColumn = 'FG';
@@ -211,16 +194,16 @@ export class InsRegistroEntradaService {
       const dia = partesFecha[0].padStart(2, '0');
       const mes = partesFecha[1].padStart(2, '0');
       let año = partesFecha[2];
-      
+
       // Asegura año de 4 dígitos
       if (año.length === 2) {
           año = `20${año}`;
       } else if (año.length !== 4) {
           throw new Error(`Formato de año inválido: ${año}`);
       }
-      
+
       const fechaFormatoPDF = `${mes}${dia}${año}`; // MMDDAAAA
-      
+
       const placa = row[0][1];
       const nombreConductor = row[0][2];
       const sucursal = row[0][3];
@@ -493,7 +476,7 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!H67', values: [[dano4Obs3]] },
         { range: 'Hoja1!I67', values: [[dano4Obs4]] },
 
-        { range: 'Hoja1!E69', values: [[nombreConductor.toUpperCase()]] },
+        { range: 'Hoja1!E69', values: [[nombreConductor]] },
         { range: 'Hoja1!G75', values: [[revisionGolpes]] },
         { range: 'Hoja1!G76', values: [[revisionLlave]] },
         { range: 'Hoja1!G77', values: [[revisionBasura]] },
@@ -531,7 +514,7 @@ export class InsRegistroEntradaService {
       const sucursal1 = sucursal.match(/\((.*?)\)/)?.[1]?.trim() || 'ND';
 
       const originalname = `${fechaFormatoPDF}-${sucursal1}-${placa}-R06-PT-19-Revisión de Vehículos-${nuevoNumero}.pdf`;
-      
+
       await this.uploadFileToDrive({
         originalname,
         mimetype: 'application/pdf',
@@ -698,13 +681,13 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometro(placa: string): Promise<{ lastOdometro: number }> {
-    if (!placa) return { lastOdometro: 0 };
-  
+  async getLastOdometro(placa: string): Promise<number> {
+    if (!placa) return 0;
+
 
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:GH500';
-  
+
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -714,8 +697,8 @@ export class InsRegistroEntradaService {
       const rows = response.data.values || [];
       console.log('Registros encontrados:', rows.length);
       console.log(placa.toUpperCase());
-      
-      
+
+
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
@@ -726,9 +709,8 @@ export class InsRegistroEntradaService {
               '$3-$2-$1T$4'
             );
             const fecha = new Date(correctedTimestamp);
-            
+
             return {
-              odometroSalida: row[5] ? parseFloat(row[5]) : 0, // Column F
               odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
               fecha: fecha
             };
@@ -740,24 +722,14 @@ export class InsRegistroEntradaService {
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
       console.log(registrosVehiculo);
-      
-     /*const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+     const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
-      return ultimoOdometro;*/
-
-      let ultimoOdometro = 0;
-      if (registrosVehiculo.length > 0) {
-        const ultimoRegistro = registrosVehiculo[0];
-        ultimoOdometro = Math.max(ultimoRegistro.odometroSalida, ultimoRegistro.odometroEntrada);
-      }
-
-      console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
-      return { lastOdometro: ultimoOdometro };
+      return ultimoOdometro;
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
         message: error.message,
         stack: error.stack,
         response: error.response?.data
       });
-      return { lastOdometro: 0 };
+      return 0;
     }
