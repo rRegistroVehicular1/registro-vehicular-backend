@@ -21,7 +21,6 @@ export class HomeService {
     estado?: string;
     datoColumnaG?: string;
     rowIndex?: number;
-    placa?: string;
   }> {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:H';
@@ -63,17 +62,17 @@ export class HomeService {
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
       if (matchingRows.length === 0) {
-        return { message: `La placa ${placa} no está registrada.`, placa : placa };
+        return { message: `La placa ${placa} no está registrada.` };
       }
 
       const lastRecord = matchingRows[0];
 
-      // Store the complete plate info in localStorage
-      localStorage.setItem('lastPlacaInfo', JSON.stringify({
-          placa,
-          rowIndex: lastRecord.rowIndex,
-          estado: lastRecord.estado
-      }));
+
+
+
+
+
+
 
       if (lastRecord.datoColumnaG === "entrada") {
         return { message: `La ${placa} ha ingresado a la plataforma.` };
@@ -85,7 +84,6 @@ export class HomeService {
         estado: lastRecord.estado || 'No especificado',
         datoColumnaG: lastRecord.datoColumnaG || 'Dato no disponible',
         rowIndex: lastRecord.rowIndex,
-        placa: placa
       };
 
     } catch (error) {
