@@ -681,11 +681,11 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometroEntrada(placa: string): Promise<number> {
+  async getLastOdometro(placa: string): Promise<number> {
     if (!placa) return 0;
   
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!A2:GH500000000000000000';
+    const range = 'Hoja 1!A2:GH';
   
     try {
       const response = await this.sheets.spreadsheets.values.get({
