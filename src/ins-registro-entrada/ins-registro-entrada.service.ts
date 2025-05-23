@@ -699,7 +699,6 @@ export class InsRegistroEntradaService {
   async getLastOdometro(placa: string): Promise<number> {
     if (!placa) return 0;
   
-
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:GH';
   
@@ -710,7 +709,7 @@ export class InsRegistroEntradaService {
       });
 
       const rows = response.data.values || [];
-      console.log('Registros encontrados:', rows.length);
+      console.log(`Registros encontrados para placa ${placa}:`, rows.length);
       console.log(placa.toUpperCase());
       
       // Filtrar por placa y ordenar por fecha (columna A)
@@ -724,8 +723,12 @@ export class InsRegistroEntradaService {
                 /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
                 '$3-$2-$1T$4'
               );
+          
               const fecha = new Date(correctedTimestamp);
-              const odometroEntrada = row[189] ? parseFloat(row[189]) : 0; // Columna GH
+
+              console.log('Valor crudo de odómetro:', row[189], 'Tipo:', typeof row[189]);
+              const odometroEntrada = (row[189] && !isNaN(parseFloat(row[189]))) ? parseFloat(row[189]) : 0; // Columna GH
+              
               return { odometroEntrada, fecha };
           } catch (error) {
               console.error('Error al procesar fecha:', error);
