@@ -701,7 +701,7 @@ export class InsRegistroEntradaService {
   
 
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    const range = 'Hoja 1!A2:GH500';
+    const range = 'Hoja 1!A2:GH';
   
     try {
       const response = await this.sheets.spreadsheets.values.get({
@@ -713,20 +713,21 @@ export class InsRegistroEntradaService {
       console.log('Registros encontrados:', rows.length);
       console.log(placa.toUpperCase());
       
-      
+      // Filtrar por placa y ordenar por fecha (columna A)
       const registrosVehiculo = rows
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
           try {
+            // Parsear fecha (columna A) y odómetro (columna GH, índice 189)
             const rawTimestamp = row[0]?.trim();
             const correctedTimestamp = rawTimestamp.replace(
               /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
               '$3-$2-$1T$4'
             );
             const fecha = new Date(correctedTimestamp);
-            
+            const odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
             return {
-              odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
+              odometroEntrada: odometroEntrada,
               fecha: fecha
             };
           } catch (error) {
@@ -735,8 +736,9 @@ export class InsRegistroEntradaService {
           }
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
-        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+        .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordenar del más reciente al más antiguo
       console.log(registrosVehiculo);
+      
       const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       return ultimoOdometro;
