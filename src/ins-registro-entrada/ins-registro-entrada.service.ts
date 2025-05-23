@@ -25,7 +25,13 @@ export class InsRegistroEntradaService {
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
 
+    let placaInfo: { rowIndex: number; placa: string };
     try {
+      placaInfo = JSON.parse(lastPlacaInfo);
+      if (!placaInfo?.rowIndex || !placaInfo?.placa) {
+          throw new Error("Formato inválido: lastPlacaInfo debe tener rowIndex y placa");
+      }
+      
       // Validación básica existente
       if (!lastPlacaInfo) {
         throw new Error('Se requiere lastPlacaInfo');
@@ -41,7 +47,12 @@ export class InsRegistroEntradaService {
       const arrays = this.initializeArrays({ revisiones });
       const values = this.buildValues({ observacion, ...arrays });
 
-      const rowNumber = parseInt(lastPlacaInfo, 10);
+      //const rowNumber = parseInt(lastPlacaInfo, 10);
+      const rowNumber = placaInfo.rowIndex;
+      const placa = placaInfo.placa;
+
+    console.log("Fila a actualizar:", rowNumber); // Debe ser un número (ej: 2)
+    console.log("Placa:", placa); // Debe ser un string (ej: "ABC123")
 
       // Operaciones en Google Sheets
       const startColumn = 'FG';
