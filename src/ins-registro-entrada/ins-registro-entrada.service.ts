@@ -718,18 +718,15 @@ export class InsRegistroEntradaService {
         .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
         .map(row => {
           try {
-            // Parsear fecha (columna A) y odómetro (columna GH, índice 189)
-            const rawTimestamp = row[0]?.trim();
-            const correctedTimestamp = rawTimestamp.replace(
-              /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
-              '$3-$2-$1T$4'
-            );
-            const fecha = new Date(correctedTimestamp);
-            const odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
-            return {
-              odometroEntrada: odometroEntrada,
-              fecha: fecha
-            };
+              // Parsear fecha (columna A) y odómetro (columna GH, índice 189)
+              const rawTimestamp = row[0]?.trim();
+              const correctedTimestamp = rawTimestamp.replace(
+                /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
+                '$3-$2-$1T$4'
+              );
+              const fecha = new Date(correctedTimestamp);
+              const odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
+              return { odometroEntrada, fecha };
           } catch (error) {
             console.error('Error al procesar fecha:', error);
             return null;
