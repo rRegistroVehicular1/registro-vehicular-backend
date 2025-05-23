@@ -728,8 +728,8 @@ export class InsRegistroEntradaService {
               const odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
               return { odometroEntrada, fecha };
           } catch (error) {
-            console.error('Error al procesar fecha:', error);
-            return null;
+              console.error('Error al procesar fecha:', error);
+              return null;
           }
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
