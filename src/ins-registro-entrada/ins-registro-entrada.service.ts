@@ -722,7 +722,7 @@ export class InsRegistroEntradaService {
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
       console.log(registrosVehiculo);
-     const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       return ultimoOdometro;
     } catch (error) {
@@ -733,3 +733,4 @@ export class InsRegistroEntradaService {
       });
       return 0;
     }
+  }
