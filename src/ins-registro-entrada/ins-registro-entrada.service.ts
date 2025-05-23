@@ -51,8 +51,12 @@ export class InsRegistroEntradaService {
       const rowNumber = placaInfo.rowIndex;
       const placa = placaInfo.placa;
 
-    console.log("Fila a actualizar:", rowNumber); // Debe ser un número (ej: 2)
-    console.log("Placa:", placa); // Debe ser un string (ej: "ABC123")
+      console.log("Fila a actualizar:", rowNumber); // Debe ser un número (ej: 2)
+      console.log("Placa:", placa); // Debe ser un string (ej: "ABC123")
+
+      if (isNaN(rowNumber) || rowNumber <= 0) {
+          throw new Error(`Número de fila inválido: ${rowNumber}`);
+      }
 
       // Operaciones en Google Sheets
       const startColumn = 'FG';
