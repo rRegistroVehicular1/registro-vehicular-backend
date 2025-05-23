@@ -538,8 +538,8 @@ export class InsRegistroEntradaService {
 
       console.log('Archivo PDF subido a Google Drive');
 
-      //const recipientEmail = 'vehicularregistro526@gmail.com';
-      const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
+      const recipientEmail = 'vehicularregistro526@gmail.com';
+      //const recipientEmail = 'lasprilla@acetioxigeno.com.pa';
       await this.sendEmail(pdfBuffer, recipientEmail, originalname);
 
     } catch (error) {
