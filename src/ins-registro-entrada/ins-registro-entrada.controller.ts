@@ -10,6 +10,7 @@ export class InsRegistroEntradaController {
 
   @Get('last-odometro')
   async getLastOdometro(@Query('placa') placa: string) {
+    console.log('Received placa parameter:', placa);
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
