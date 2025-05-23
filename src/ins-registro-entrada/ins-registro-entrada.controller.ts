@@ -14,7 +14,13 @@ export class InsRegistroEntradaController {
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
-    return this.insRegistroEntradaService.getLastOdometro(placa);
+    const odometro = await this.insRegistroEntradaService.getLastOdometro(placa);
+    return { 
+      success: true,
+      lastOdometro: odometro,
+      placa,
+      timestamp: new Date().toISOString()
+    };
   }
   
   @Post('register')
