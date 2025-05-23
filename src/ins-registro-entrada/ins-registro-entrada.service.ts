@@ -696,7 +696,7 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometro(placa: string): Promise<number> {
+  async getLastOdometro(placa: string): Promise< { lastOdometro: number } > {
     if (!placa) return 0;
   
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
@@ -743,7 +743,7 @@ export class InsRegistroEntradaService {
       const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       
-      return ultimoOdometro;
+      return { lastOdometro: ultimoOdometro };
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
         message: error.message,
