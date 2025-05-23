@@ -725,7 +725,7 @@ export class InsRegistroEntradaService {
                 '$3-$2-$1T$4'
               );
               const fecha = new Date(correctedTimestamp);
-              const odometroEntrada: row[189] ? parseFloat(row[189]) : 0, // Columna GH
+              const odometroEntrada = row[189] ? parseFloat(row[189]) : 0; // Columna GH
               return { odometroEntrada, fecha };
           } catch (error) {
               console.error('Error al procesar fecha:', error);
@@ -734,10 +734,12 @@ export class InsRegistroEntradaService {
         })
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordenar del más reciente al más antiguo
+      
       console.log(registrosVehiculo);
       
       const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
+      
       return ultimoOdometro;
     } catch (error) {
       console.error('Error al obtener último odómetro:', {
