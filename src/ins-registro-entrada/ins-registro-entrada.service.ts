@@ -738,7 +738,7 @@ export class InsRegistroEntradaService {
         .filter(record => record !== null && !isNaN(record.fecha.getTime()))
         .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordenar del más reciente al más antiguo
       
-      console.log(registrosVehiculo);
+      console.log(`Registros válidos para placa ${placa}:`, registrosVehiculo.length);
       
       const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
