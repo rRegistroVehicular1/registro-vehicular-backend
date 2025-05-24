@@ -9,13 +9,12 @@ export class InsRegistroEntradaController {
   constructor(private readonly insRegistroEntradaService: InsRegistroEntradaService) { }
 
   @Get('last-odometro')
-  async getLastOdometro(@Query('placa') placa: string, @Query('tipo') tipo: string) {
-    console.log(`Buscando último odómetro de ${tipo} para placa ${placa}`);
+  async getLastOdometro(@Query('placa') placa: string) {
+    console.log('Received placa parameter:', placa);
     if(!placa) {
       throw new BadRequestException('El parámetro "placa" es requerido');
     }
-    const tipoValido = tipo === 'entrada' ? 'entrada' : 'salida';
-    return this.insRegistroEntradaService.getLastOdometro(placa, tipoValido);
+    return this.insRegistroEntradaService.getLastOdometro(placa);
   }
   
   @Post('register')
