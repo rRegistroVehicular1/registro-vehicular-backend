@@ -696,7 +696,7 @@ export class InsRegistroEntradaService {
     return transporter.sendMail(mailOptions);
   }
 
-  async getLastOdometro(placa: string): Promise< { lastOdometro: number } > {
+  async getLastOdometro(placa: string, tipo: 'salida' | 'entrada' = 'salida'): Promise< { lastOdometro: number } > {
     if (!placa) return 0;
   
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
@@ -711,6 +711,10 @@ export class InsRegistroEntradaService {
       const rows = response.data.values || [];
       console.log(`Registros encontrados para placa ${placa}:`, rows.length);
       console.log(placa.toUpperCase());
+
+      // Determinar qué columna buscar según el tipo
+      const columnaOdometro = tipo === 'salida' ? 5 : 189; // F=5, GH=189
+      const columnaEstado = 6; // G=6 (estado: salida/entrada)
       
       // Filtrar por placa y ordenar por fecha (columna A)
       const registrosVehiculo = rows
@@ -727,10 +731,12 @@ export class InsRegistroEntradaService {
               const fecha = new Date(correctedTimestamp);
 
               console.log('Valor crudo de odómetro:', row[189], 'Tipo:', typeof row[189]);
-              const odometroEntrada = (row[189] && !isNaN(parseFloat(row[189]))) ? parseFloat(row[189]) : 0; // Columna GH
-              const odometroSalida = (row[5] && !isNaN(parseFloat(row[5]))) ? parseFloat(row[5]) : 0; // Columna F
+              const odometro = (row[columnaOdometro] && !isNaN(parseFloat(row[columnaOdometro]))) ? 
+                          parseFloat(row[columnaOdometro]) : 0;
+              //const odometroEntrada = (row[189] && !isNaN(parseFloat(row[189]))) ? parseFloat(row[189]) : 0; // Columna GH
+              //const odometroSalida = (row[5] && !isNaN(parseFloat(row[5]))) ? parseFloat(row[5]) : 0; // Columna F
             
-              return { odometroSalida, odometroEntrada, fecha };
+              return { {/*odometroSalida, odometroEntrada*/}odometro, fecha };
           } catch (error) {
               console.error('Error al procesar fecha:', error);
               return null;
@@ -741,7 +747,7 @@ export class InsRegistroEntradaService {
       
       console.log(`Registros válidos para placa ${placa}:`, registrosVehiculo.length);
       
-      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroEntrada : 0;
+      const ultimoOdometro = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometro : 0;
       console.log(`Último odómetro para ${placa}: ${ultimoOdometro}`);
       
       return { lastOdometro: ultimoOdometro };
