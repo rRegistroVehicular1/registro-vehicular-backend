@@ -728,8 +728,9 @@ export class InsRegistroEntradaService {
 
               console.log('Valor crudo de odómetro:', row[189], 'Tipo:', typeof row[189]);
               const odometroEntrada = (row[189] && !isNaN(parseFloat(row[189]))) ? parseFloat(row[189]) : 0; // Columna GH
-              
-              return { odometroEntrada, fecha };
+              const odometroSalida = (row[5] && !isNaN(parseFloat(row[5]))) ? parseFloat(row[5]) : 0; // Columna F
+            
+              return { odometroSalida || odometroEntrada, fecha };
           } catch (error) {
               console.error('Error al procesar fecha:', error);
               return null;
