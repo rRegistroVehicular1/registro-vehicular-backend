@@ -698,7 +698,7 @@ export class InsRegistroEntradaService {
     const mailOptions = {
       from: mailerConfig.transport.auth.user,
       to: recipientEmails.join(', '), // Convierte el array a string separado por comas
-      subject: 'Reporte de inspección R03-PT-19 - ${sucursal}`,
+      subject: `Reporte de inspección R03-PT-19 - ${sucursal}`,
       text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
       attachments: [
         {
