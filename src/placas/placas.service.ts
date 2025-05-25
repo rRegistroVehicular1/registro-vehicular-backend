@@ -15,21 +15,32 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasFromSheet(): Promise<string[]> {
+  async getPlacasFromSheet(): Promise<numeroVehiculo: string, placa: string}[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:C';
+    const range = 'Lista de Placas!A2:C'; // A: N° Vehículo, C: Placa
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
-@@ -37,27 +37,31 @@
-        .filter(item => item.length > 0); // Filtra strings vacíos
+        spreadsheetId,
+        range,
+      });
+
+      if (!data.values) {
+        console.log('No se encontraron datos en el rango especificado');
+        return [];
+      }
+
+      // Procesamiento robusto
+      const placas = data.values
+        .map(row => {
+          const numeroVehiculo = row[0]?.toString().trim() || '';
+          const placa = row[2]?.toString().trim() || '';
+          return { numeroVehiculo, placa };
+        })
+        .filter(item => item.placa.length > 0); // Filtra placas vacías
 
       console.log('Placas obtenidas:', placas); // Para diagnóstico
       return placas;
-
-
-
-
 
     } catch (error) {
       console.error('Error al obtener placas:', error);
