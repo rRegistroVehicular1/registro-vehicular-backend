@@ -6,6 +6,17 @@ import { Readable } from 'stream';
 import nodemailer from 'nodemailer'
 import { mailerConfig } from '../mailer.config';
 
+const SUCURSAL_EMAILS = {
+      "(SU01) Casa Matriz Mañanitas": ["vehicularregistro526@gmail.com"],
+      "(SU02) Chiriquí": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
+      "(SU03) Chorrera": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
+      "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"],
+      "(SU05) Colón": ["vehicularregistro526@gmail.com", "lasprilla@acetioxigeno.com.pa"],
+      "(SU06) Juan Díaz": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
+      "(SU07) Aguadulce": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
+      "(SU08) Los Santos": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"]
+    };
+
 @Injectable()
 export class FallaService {
 
