@@ -280,6 +280,8 @@ export class InsRegistroEntradaService {
       const llanta10Obs3 = row[0][55];
       const llanta10Obs4 = row[0][56];
 
+      const observacionLLlantas = row[0][57];
+      
       const nivel1No = row[0][60];
       const nivel1Si = row[0][61];
 
@@ -424,6 +426,8 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!D27', values: [[llanta10Obs2]] },
         { range: 'Hoja1!E27', values: [[llanta10Obs3]] },
         { range: 'Hoja1!F27', values: [[llanta10Obs4]] },
+
+        { range: 'Hoja1!C30', values: [[observacionLlantas]] },
 
         { range: 'Hoja1!G33', values: [[nivel1Si]] },
         { range: 'Hoja1!H33', values: [[nivel1No]] },
