@@ -17,7 +17,7 @@ export class PlacasService {
 
   async getPlacasFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:C';
+    const range = 'Lista de Placas!A2:C';
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -37,7 +37,11 @@ export class PlacasService {
         .filter(item => item.length > 0); // Filtra strings vacíos
   
       console.log('Placas obtenidas:', placas); // Para diagnóstico
-      return placas;
+      
+      // Devolvemos un array de arrays con [numeroVehiculo, , placa]
+      return data.values
+        .filter(row => row && row.length >= 3 && row[0] && row[2]) // Filtramos filas válidas
+        .map(row => [row[0].trim(), '', row[2].trim()]); // Normalizamos datos
       
     } catch (error) {
       console.error('Error al obtener placas:', error);
