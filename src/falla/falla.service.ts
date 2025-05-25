@@ -316,7 +316,7 @@ export class FallaService {
         const mailOptions = {
             from: mailerConfig.transport.auth.user,
             to: recipientEmails.join(', '),
-            subject: 'Reporte de falla R03-PT-19 - ${sucursal}',
+            subject: `Reporte de falla R03-PT-19 - ${sucursal}`,
             text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
             attachments: [
                 {
