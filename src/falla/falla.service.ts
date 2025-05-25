@@ -28,17 +28,6 @@ export class FallaService {
         this.sheets = google.sheets({ version: 'v4', auth: this.auth });
     }
 
-    const SUCURSAL_EMAILS = {
-      "(SU01) Casa Matriz Mañanitas": ["vehicularregistro526@gmail.com"],
-      "(SU02) Chiriquí": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
-      "(SU03) Chorrera": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
-      "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"],
-      "(SU05) Colón": ["vehicularregistro526@gmail.com", "lasprilla@acetioxigeno.com.pa"],
-      "(SU06) Juan Díaz": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
-      "(SU07) Aguadulce": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
-      "(SU08) Los Santos": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"]
-    };
-
     async processRegistroFalla(
         sucursal: string,
         fecha: string,
@@ -179,7 +168,7 @@ export class FallaService {
             const año = fechaFormateada.getFullYear(); // AAAA
             const fechaSinGuiones = `${mes}${dia}${año}`;
 
-            const originalname = `${fechaSinGuiones}-${sucursal1}-${nameText.placa}- R07-PT-19-Reporte de Falla-${nuevoNumero}`;
+            const originalname = `${fechaSinGuiones}-${sucursal1}-${nameText.vehiculo}- R07-PT-19-Reporte de Falla-${nuevoNumero}`;
 
             await this.uploadFileToDrive({
                 originalname,
