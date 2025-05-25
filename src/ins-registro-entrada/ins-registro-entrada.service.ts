@@ -474,22 +474,22 @@ export class InsRegistroEntradaService {
         { range: 'Hoja1!D61', values: [[dano1Obs1]] },
         { range: 'Hoja1!F61', values: [[dano1Obs2]] },
         { range: 'Hoja1!H61', values: [[dano1Obs3]] },
-        { range: 'Hoja1!J61', values: [[dano1Obs4]] },
+        { range: 'Hoja1!I61', values: [[dano1Obs4]] },
 
         { range: 'Hoja1!D63', values: [[dano2Obs1]] },
         { range: 'Hoja1!F63', values: [[dano2Obs2]] },
         { range: 'Hoja1!H63', values: [[dano2Obs3]] },
-        { range: 'Hoja1!J63', values: [[dano2Obs4]] },
+        { range: 'Hoja1!I63', values: [[dano2Obs4]] },
 
         { range: 'Hoja1!D65', values: [[dano3Obs1]] },
         { range: 'Hoja1!F65', values: [[dano3Obs2]] },
         { range: 'Hoja1!H65', values: [[dano3Obs3]] },
-        { range: 'Hoja1!J65', values: [[dano3Obs4]] },
+        { range: 'Hoja1!I65', values: [[dano3Obs4]] },
 
         { range: 'Hoja1!D67', values: [[dano4Obs1]] },
         { range: 'Hoja1!F67', values: [[dano4Obs2]] },
         { range: 'Hoja1!H67', values: [[dano4Obs3]] },
-        { range: 'Hoja1!J67', values: [[dano4Obs4]] },
+        { range: 'Hoja1!I67', values: [[dano4Obs4]] },
 
         { range: 'Hoja1!E69', values: [[nombreConductor.toUpperCase()]] },
         { range: 'Hoja1!G75', values: [[revisionGolpes]] },
