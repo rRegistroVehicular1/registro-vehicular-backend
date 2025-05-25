@@ -280,7 +280,7 @@ export class InsRegistroEntradaService {
       const llanta10Obs3 = row[0][55];
       const llanta10Obs4 = row[0][56];
 
-      const observacionLLlantas = row[0][57];
+      const observacionLlantas = row[0][57];
       
       const nivel1No = row[0][60];
       const nivel1Si = row[0][61];
