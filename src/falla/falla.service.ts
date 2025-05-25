@@ -17,6 +17,17 @@ export class FallaService {
         this.sheets = google.sheets({ version: 'v4', auth: this.auth });
     }
 
+    const SUCURSAL_EMAILS = {
+      "(SU01) Casa Matriz Mañanitas": ["vehicularregistro526@gmail.com"],
+      "(SU02) Chiriquí": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
+      "(SU03) Chorrera": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
+      "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"],
+      "(SU05) Colón": ["vehicularregistro526@gmail.com", "lasprilla@acetioxigeno.com.pa"],
+      "(SU06) Juan Díaz": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
+      "(SU07) Aguadulce": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
+      "(SU08) Los Santos": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"]
+    };
+
     async processRegistroFalla(
         sucursal: string,
         fecha: string,
@@ -167,8 +178,10 @@ export class FallaService {
 
             console.log('Archivo PDF subido a Google Drive');
 
-            const recipientEmail = 'vehicularregistro526@gmail.com';
-            await this.sendEmail(pdfBuffer, recipientEmail, originalname);
+            //const recipientEmails = 'vehicularregistro526@gmail.com';
+            // Obtener los emails destinatarios para esta sucursal
+            const recipientEmails = SUCURSAL_EMAILS[sucursal];
+            await this.sendEmail(pdfBuffer, sucursal, recipientEmails, originalname);
 
         } catch (error) {
             console.error('Error al obtener los datos de la fila de Google Sheets:', error.response?.data || error.message || error);
@@ -296,14 +309,14 @@ export class FallaService {
         });
     }
 
-    async sendEmail(pdfBuffer: Buffer, recipientEmail: string, uniqueIdentifier: string) {
+    async sendEmail(pdfBuffer: Buffer, sucursal: string, recipientEmails: string[], uniqueIdentifier: string) {
 
         const transporter = nodemailer.createTransport(mailerConfig.transport);
 
         const mailOptions = {
             from: mailerConfig.transport.auth.user,
-            to: recipientEmail,
-            subject: 'Reporte de inspección de salida',
+            to: recipientEmails.join(', '),
+            subject: 'Reporte de falla R03-PT-19 - ${sucursal}',
             text: 'Por favor, encuentre el reporte de inspección adjunto en formato PDF.',
             attachments: [
                 {
