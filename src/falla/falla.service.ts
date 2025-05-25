@@ -13,8 +13,8 @@ const SUCURSAL_EMAILS = {
       "(SU04) Chorrera Planta": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"],
       "(SU05) Colón": ["vehicularregistro526@gmail.com", "lasprilla@acetioxigeno.com.pa"],
       "(SU06) Juan Díaz": ["vehicularregistro526@gmail.com", "beto.asprilla@gmail.com"],
-      "(SU07) Aguadulce": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
-      "(SU08) Los Santos": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"]
+      "(SU08) Aguadulce": ["vehicularregistro526@gmail.com", "lasprilla344@gmail.com"],
+      "(SU09) Los Santos": ["vehicularregistro526@gmail.com", "aosamantvehicular@gmail.com"]
     };
 
 @Injectable()
