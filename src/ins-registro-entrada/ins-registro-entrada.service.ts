@@ -753,3 +753,60 @@ export class InsRegistroEntradaService {
       return 0;
     }
   }
+
+  async getLastOdometroSalida(placa: string): Promise<{ lastOdometroSalida: number }> {
+    if (!placa) return { lastOdometroSalida: 0 };
+  
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    const range = 'Hoja 1!A2:GH'; // A: Fecha/Hora, B: Placa, F: Odómetro Salida, GH: Odómetro Entrada
+
+    try {
+        const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+        });
+
+        const rows = response.data.values || [];
+        console.log(`Registros encontrados para placa ${placa}:`, rows.length);
+        
+        // Filtrar por placa y ordenar por fecha (columna A) descendente
+        const registrosVehiculo = rows
+            .filter(row => row && row[1] && row[1].trim().toUpperCase() === placa.trim().toUpperCase())
+            .map(row => {
+                try {
+                    // Parsear fecha (columna A) y odómetro salida (columna F)
+                    const rawTimestamp = row[0]?.trim();
+                    const correctedTimestamp = rawTimestamp.replace(
+                        /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}:\d{2}:\d{2})/,
+                        '$3-$2-$1T$4'
+                    );
+                
+                    const fecha = new Date(correctedTimestamp);
+                    const odometroSalida = (row[5] && !isNaN(parseFloat(row[5]))) ? parseFloat(row[5]) : 0; // Columna F
+                    
+                    return { odometroSalida, fecha };
+                } catch (error) {
+                    console.error('Error al procesar registro:', error);
+                    return null;
+                }
+            })
+            .filter(record => record !== null && !isNaN(record.fecha.getTime()))
+            .sort((a, b) => b.fecha.getTime() - a.fecha.getTime()); // Ordenar del más reciente al más antiguo
+        
+        console.log(`Registros válidos para placa ${placa}:`, registrosVehiculo.length);
+        
+        // Tomar el último odómetro de SALIDA (columna F)
+        const ultimoOdometroSalida = registrosVehiculo.length > 0 ? registrosVehiculo[0].odometroSalida : 0;
+        console.log(`Último odómetro de SALIDA para ${placa}: ${ultimoOdometroSalida}`);
+        
+        return { lastOdometroSalida: ultimoOdometroSalida };
+    } catch (error) {
+        console.error('Error al obtener último odómetro de salida:', {
+            message: error.message,
+            stack: error.stack,
+            response: error.response?.data
+        });
+        return { lastOdometroSalida: 0 };
+    }
+  }
+
