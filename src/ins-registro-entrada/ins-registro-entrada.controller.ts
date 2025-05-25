@@ -16,6 +16,15 @@ export class InsRegistroEntradaController {
     }
     return this.insRegistroEntradaService.getLastOdometro(placa);
   }
+
+  @Get('last-odometro-salida')
+  async getLastOdometroSalida(@Query('placa') placa: string) {
+      console.log('Received placa parameter for last odometer (exit):', placa);
+      if(!placa) {
+          throw new BadRequestException('El parámetro "placa" es requerido');
+      }
+      return this.insRegistroEntradaService.getLastOdometroSalida(placa);
+  }
   
   @Post('register')
   @UseInterceptors(FileInterceptor('documento'))
