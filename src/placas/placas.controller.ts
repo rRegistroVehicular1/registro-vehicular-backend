@@ -18,6 +18,17 @@ export class PlacasController {
     }
   }
 
+  @Get('get-placas-and-types')
+  async getPlacasAndTypes() {
+      try {
+          const data = await this.placasService.getPlacasAndTypesFromSheet();
+          return data;
+      } catch (error) {
+          console.error('Error en controller:', error);
+          return {placas: [], tipos: [], placaTipoMap: {}};
+      }
+  }
+
   @Get('get-vehiculos')
   async getVehiculos() {
       try {
