@@ -17,4 +17,15 @@ export class PlacasController {
       return []; // Siempre devuelve array aunque falle
     }
   }
+
+  @Get('get-vehiculos')
+  async getVehiculos() {
+      try {
+          const data = await this.placasService.getVehiculosFromSheet();
+          return data;
+      } catch (error) {
+          console.error('Error en controller:', error);
+          return {};
+      }
+  }
 }
