@@ -45,6 +45,40 @@ export class PlacasService {
     }
   }
 
+  async getVehiculosFromSheet(): Promise<Record<string, string>> {
+      const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+      const range = 'Lista de Placas!A2:C'; // Asumiendo que col A es número de vehículo y col C es placa
+  
+      try {
+          const { data } = await this.sheets.spreadsheets.values.get({
+              spreadsheetId,
+              range,
+          });
+  
+          if (!data.values) {
+              console.log('No se encontraron datos en el rango especificado');
+              return {};
+          }
+  
+          const vehiculosMap: Record<string, string> = {};
+          
+          data.values.forEach(row => {
+              if (row.length >= 2 && row[0] && row[2]) { // Asegurarse que hay datos en col A y C
+                  const numeroVehiculo = row[0].toString().trim();
+                  const placa = row[2].toString().trim().toUpperCase();
+                  vehiculosMap[placa] = numeroVehiculo;
+              }
+          });
+  
+          console.log('Mapa de placas a vehículos:', vehiculosMap);
+          return vehiculosMap;
+          
+      } catch (error) {
+          console.error('Error al obtener vehículos:', error);
+          return {};
+      }
+  }
+
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
