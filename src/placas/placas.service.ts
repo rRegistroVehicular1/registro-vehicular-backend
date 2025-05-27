@@ -15,9 +15,9 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasAndTypesFromSheet(): Promise<{placas: string[], tipos: string[], placaTipoMap: Record<string, string>}> {
+  async getPlacasFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:D'; // Columna C: Placas, Columna D: Tipo de Vehículo
+    const range = 'Lista de Placas!C2:C';
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -27,30 +27,21 @@ export class PlacasService {
 
       if (!data.values) {
         console.log('No se encontraron datos en el rango especificado');
-        return {placas: [], tipos: [], placaTipoMap: {}};
+        return [];
       }
 
-      const placas: string[] = [];
-      const tipos: string[] = [];
-      const placaTipoMap: Record<string, string> = {};
-      
-      data.values.forEach(row => {
-            if (row.length >= 2 && row[0] && row[1]) {
-                const placa = row[0].toString().trim();
-                const tipo = row[1].toString().trim().toLowerCase();
-                
-                placas.push(placa);
-                tipos.push(tipo);
-                placaTipoMap[placa] = tipo;
-            }
-      });
-      
-      console.log('Placas y tipos obtenidos:', {placas, tipos, placaTipoMap}); // Para diagnóstico
-      return {placas, tipos, placaTipoMap};
+      // Procesamiento robusto
+      const placas = data.values
+        .flat() // Convierte matriz en array unidimensional
+        .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
+        .filter(item => item.length > 0); // Filtra strings vacíos
+  
+      console.log('Placas obtenidas:', placas); // Para diagnóstico
+      return placas;
       
     } catch (error) {
-      console.error('Error al obtener placas y tipos:', error);
-      return {placas: [], tipos: [], placaTipoMap: {}}; // Fallback seguro
+      console.error('Error al obtener placas:', error);
+      return []; // Fallback seguro
     }
   }
 
