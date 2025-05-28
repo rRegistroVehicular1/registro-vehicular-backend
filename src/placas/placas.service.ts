@@ -61,16 +61,19 @@ export class PlacasService {
               return [];
           }
 
-          const tipoMap: Record<string, string> = {};
+          const tiposMap: Record<string, string> = {};
   
           data.values.forEach(row => {
               if(row.length >= 4 && row[2] !== undefined && row[3] !== undefined && 
                  row[2].toString().trim() !== "" && row[3].toString().trim() !== "") {
                   const tipoVehiculo = row[3].toString().trim();    
-                  placa = row[2].toString().trim().toUpperCase();
-                  tipoMap[placa] = tipoVehiculo;
+                  const placa = row[2].toString().trim().toUpperCase();
+                  tiposMap[placa] = tipoVehiculo;
               }
           });
+
+          console.log('Mapa de Placa a Tipo de Vehiculo:', tiposMap);
+          return tiposMap;
           
       } catch (error) {
           console.error('Error al obtener placas y tipos:', error);
