@@ -46,7 +46,7 @@ export class PlacasService {
   }
 
   // placas.service.ts (backend)
-  async getPlacasYTipoFromSheet(): Promise<Array<{placa: string, tipoVehiculo: string}>> {
+  async getPlacasYTipoFromSheet(): Promise<Record<string, string>> {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
       const range = 'Lista de Placas!C2:D'; // Columna C: placas, Columna D: tipos
   
@@ -60,17 +60,20 @@ export class PlacasService {
               console.log('No se encontraron datos en el rango especificado');
               return [];
           }
+
+          const tipoMap: Record<string, string> = {};
   
-          return data.values
-              .filter(row => row.length >= 2 && row[0] && row[1]) // Asegura que haya ambos valores
-              .map(row => ({
-                  placa: row[0].toString().trim(),
-                  tipoVehiculo: row[1].toString().trim()
-              }));
+          data.values.forEach(row => {
+              if(row.length >= 2 && row[2] && row[3]){// Asegura que hay datos en la col C y D
+                  const tipoVehiculo = row[3].toString().trim();    
+                  placa = row[2].toString().trim().toUpperCase();
+                  tipoMap[placa] = tipoVehiculo;
+              }    
+          });
           
       } catch (error) {
           console.error('Error al obtener placas y tipos:', error);
-          return []; // Fallback seguro
+          return {}; // Fallback seguro
       }
   }
 
