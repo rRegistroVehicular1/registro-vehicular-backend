@@ -64,7 +64,7 @@ export class PlacasService {
           const tipoMap: Record<string, string> = {};
   
           data.values.forEach(row => {
-              if(row.length >= 2 && row[2] && row[3]){// Asegura que hay datos en la col C y D
+              if(row.length >= 4 && row[2] && row[3]){// Asegura que hay datos en la col C y D
                   const tipoVehiculo = row[3].toString().trim();    
                   placa = row[2].toString().trim().toUpperCase();
                   tipoMap[placa] = tipoVehiculo;
