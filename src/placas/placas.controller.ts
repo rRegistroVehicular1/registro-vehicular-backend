@@ -19,7 +19,7 @@ export class PlacasController {
       }
   }
   
-  @Get('get-data-placas')
+  {/*@Get('get-data-placas')
   async getData() {
     try {
       const data = await this.placasService.getPlacasFromSheet();
@@ -28,7 +28,7 @@ export class PlacasController {
       console.error('Error en controller:', error);
       return []; // Siempre devuelve array aunque falle
     }
-  }
+  }*/}
 
   @Get('get-vehiculos')
   async getVehiculos() {
