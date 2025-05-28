@@ -15,40 +15,6 @@ export class PlacasService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  async getPlacasYTipoFromSheet(): Promise<Record<string, string>> {
-        const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-        const range = 'Lista de Placas!C2:D'; // Columna C: Placas, Columna D: Tipo de Vehículo
-
-        try {
-            const { data } = await this.sheets.spreadsheets.values.get({
-                spreadsheetId,
-                range,
-            });
-
-            if (!data.values) {
-                console.log('No se encontraron datos en el rango especificado');
-                return {};
-            }
-
-            const mapeo: Record<string, string> = {};
-            
-            data.values.forEach(row => {
-                if (row.length >= 2 && row[0] && row[1]) {
-                    const placa = row[0].toString().trim().toUpperCase();
-                    const tipo = row[1].toString().trim().toLowerCase();
-                    mapeo[placa] = tipo;
-                }
-            });
-
-            console.log('Mapa de placas a tipos:', mapeo);
-            return mapeo;
-            
-        } catch (error) {
-            console.error('Error al obtener mapeo de placas y tipos:', error);
-            return {};
-        }
-    }
-  
   async getPlacasFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
     const range = 'Lista de Placas!C2:C';
