@@ -64,7 +64,7 @@ export class PlacasService {
           const tiposMap: Record<string, string> = {};
   
           data.values.forEach(row => {
-              if(row.length >= 4 && row[2] !== undefined && row[3] !== undefined && 
+              if(row.length >= 3 && row[2] !== undefined && row[3] !== undefined && 
                  row[2].toString().trim() !== "" && row[3].toString().trim() !== "") {
                   const tipoVehiculo = row[3].toString().trim();    
                   const placa = row[2].toString().trim().toUpperCase();
