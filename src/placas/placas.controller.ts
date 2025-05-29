@@ -28,4 +28,15 @@ export class PlacasController {
           return {};
       }
   }
+
+  @Get('get-tipos-vehiculo')
+  async getTiposVehiculo() {
+      try {
+          const data = await this.placasService.getTiposVehiculo();
+          return data;
+      } catch (error) {
+          console.error('Error en controller:', error);
+          return {};
+      }
+  }
 }
