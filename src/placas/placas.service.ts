@@ -79,6 +79,40 @@ export class PlacasService {
       }
   }
 
+  async getTiposVehiculo(): Promise<Record<string, string>> {
+      const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+      const range = 'Lista de Placas!C2:D'; // Columna C: Placa, Columna D: Tipo de Vehículo
+  
+      try {
+          const { data } = await this.sheets.spreadsheets.values.get({
+              spreadsheetId,
+              range,
+          });
+  
+          if (!data.values) {
+              console.log('No se encontraron datos en el rango especificado');
+              return {};
+          }
+  
+          const tiposMap: Record<string, string> = {};
+          
+          data.values.forEach(row => {
+              if (row.length >= 2 && row[0] && row[1]) {
+                  const placa = row[0].toString().trim().toUpperCase();
+                  const tipo = row[1].toString().trim().toLowerCase();
+                  tiposMap[placa] = tipo;
+              }
+          });
+  
+          console.log('Mapa de placas a tipos de vehículo:', tiposMap);
+          return tiposMap;
+          
+      } catch (error) {
+          console.error('Error al obtener tipos de vehículo:', error);
+          return {};
+      }
+  }
+
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
