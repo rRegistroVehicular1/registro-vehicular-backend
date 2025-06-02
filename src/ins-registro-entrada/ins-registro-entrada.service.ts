@@ -621,7 +621,7 @@ export class InsRegistroEntradaService {
     await auth.authorize();
     const token = await auth.getAccessToken();
 
-    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=pdf&size=A4&portrait=true&fitw=true&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5`;
+    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=pdf&size=legal&portrait=true&fitw=true&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5`;
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${token.token}` },
       responseType: 'arraybuffer'
