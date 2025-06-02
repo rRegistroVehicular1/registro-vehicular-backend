@@ -621,7 +621,7 @@ export class InsRegistroEntradaService {
     await auth.authorize();
     const token = await auth.getAccessToken();
 
-    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=pdf&size=legal&portrait=true&fitw=true&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5`;
+    const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=pdf&size=8.5x14&portrait=true&fitw=true&top_margin=0.5&bottom_margin=0.5&left_margin=0.5&right_margin=0.5`;
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${token.token}` },
       responseType: 'arraybuffer'
@@ -632,8 +632,11 @@ export class InsRegistroEntradaService {
     const pdfDoc = await PDFDocument.load(pdfBuffer);
     const pages = pdfDoc.getPages();
 
+    const legalWidth = 8.5 * 72;  // 72 puntos por pulgada
+    const legalHeight = 14 * 72;
+
     pages.forEach(page => {
-      page.setSize(595, 842);
+      page.setSize(legalWidth, legalHeight);
     });
 
     const modifiedPdfBytes = await pdfDoc.save();
