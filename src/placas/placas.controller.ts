@@ -39,4 +39,15 @@ export class PlacasController {
           return {};
       }
   }
+
+  @Get('get-conductores')
+  async getConductores() {
+      try {
+          const data = await this.placasService.getConductoresFromSheet();
+          return data;
+      } catch (error) {
+          console.error('Error en controller:', error);
+          return [];
+      }
+  }
 }
