@@ -113,6 +113,37 @@ export class PlacasService {
       }
   }
 
+  async getConductoresFromSheet(): Promise<string[]> {
+      const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+      const range = 'Hoja 2!B2:B'; // Asume que los conductores están en Hoja 2, columna B
+  
+      try {
+          const { data } = await this.sheets.spreadsheets.values.get({
+              spreadsheetId,
+              range,
+          });
+  
+          if (!data.values) {
+              console.log('No se encontraron conductores en el rango especificado');
+              return [];
+          }
+  
+          // Procesamiento para obtener nombres únicos y ordenados
+          const conductores = data.values
+              .flat()
+              .map(item => item ? item.toString().trim() : '')
+              .filter(item => item.length > 0 && item !== 'Nombre del Conductor') // Filtra cabecera si existe
+              .filter((value, index, self) => self.indexOf(value) === index) // Elimina duplicados
+              .sort((a, b) => a.localeCompare(b)); // Orden alfabético
+  
+          console.log('Conductores obtenidos:', conductores);
+          return conductores;
+      } catch (error) {
+          console.error('Error al obtener conductores:', error);
+          return [];
+      }
+  }
+
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
