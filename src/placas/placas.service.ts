@@ -115,7 +115,7 @@ export class PlacasService {
 
   async getConductoresFromSheet(): Promise<string[]> {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-      const range = 'Hoja 2!B2:B'; // Asume que los conductores están en Hoja 2, columna B
+      const range = 'Lista de Conductores!B2:B'; // Asume que los conductores están en Hoja 2, columna B
   
       try {
           const { data } = await this.sheets.spreadsheets.values.get({
