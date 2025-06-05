@@ -51,7 +51,6 @@ export class PlacasController {
       }
   }
 
-  // placas.controller.ts
   @Get('get-cantidad-llantas')
   async getCantidadLlantas() {
     try {
