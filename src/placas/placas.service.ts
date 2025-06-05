@@ -45,40 +45,6 @@ export class PlacasService {
     }
   }
 
-  async getCantidadLlantas(): Promise<Record<string, number>> {
-      const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-      const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col E: Cantidad de llantas
-  
-      try {
-          const { data } = await this.sheets.spreadsheets.values.get({
-              spreadsheetId,
-              range,
-          });
-  
-          if (!data.values) {
-              console.log('No se encontraron datos en el rango especificado');
-              return {};
-          }
-  
-          const llantasMap: Record<string, number> = {};
-          
-          data.values.forEach(row => {
-              if (row.length >= 3 && row[0] && row[2]) {
-                  const placa = row[0].toString().trim().toUpperCase();
-                  const cantidad = parseInt(row[2]) || 4; // Default a 4 si no hay valor
-                  llantasMap[placa] = cantidad;
-              }
-          });
-  
-          console.log('Mapa de placas a cantidad de llantas:', llantasMap);
-          return llantasMap;
-          
-      } catch (error) {
-          console.error('Error al obtener cantidad de llantas:', error);
-          return {};
-      }
-  }
-
   async getVehiculosFromSheet(): Promise<Record<string, string>> {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
       const range = 'Lista de Placas!A2:C'; // Asumiendo que col A es número de vehículo y col C es placa
