@@ -173,6 +173,7 @@ export class PlacasService {
     }
   }
 
+
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
