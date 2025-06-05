@@ -18,6 +18,17 @@ export class PlacasController {
     }
   }
 
+  @Get('get-llantas-por-placa')
+  async getLlantasPorPlaca() {
+      try {
+          const data = await this.placasService.getLlantasPorPlaca();
+          return data;
+      } catch (error) {
+          console.error('Error en controller:', error);
+          return {};
+      }
+  }
+
   @Get('get-vehiculos')
   async getVehiculos() {
       try {
