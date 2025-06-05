@@ -50,4 +50,15 @@ export class PlacasController {
           return [];
       }
   }
+
+  // placas.controller.ts
+  @Get('get-cantidad-llantas')
+  async getCantidadLlantas() {
+    try {
+      return await this.placasService.getCantidadLlantas();
+    } catch (error) {
+      console.error('Error:', error);
+      return {};
+    }
+  }
 }
