@@ -45,9 +45,9 @@ export class PlacasService {
     }
   }
 
-  async getLlantasPorPlaca(): Promise<Record<string, number>> {
+  async getCantidadLlantas(): Promise<Record<string, number>> {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-      const range = 'Lista de Placas!C2:E'; // Columna C: Placa, Columna E: Cantidad de llantas
+      const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col E: Cantidad de llantas
   
       try {
           const { data } = await this.sheets.spreadsheets.values.get({
@@ -65,8 +65,8 @@ export class PlacasService {
           data.values.forEach(row => {
               if (row.length >= 3 && row[0] && row[2]) {
                   const placa = row[0].toString().trim().toUpperCase();
-                  const cantidadLlantas = parseInt(row[2].toString().trim()) || 4; // Valor por defecto 4 si no se puede parsear
-                  llantasMap[placa] = cantidadLlantas;
+                  const cantidad = parseInt(row[2]) || 4; // Default a 4 si no hay valor
+                  llantasMap[placa] = cantidad;
               }
           });
   
