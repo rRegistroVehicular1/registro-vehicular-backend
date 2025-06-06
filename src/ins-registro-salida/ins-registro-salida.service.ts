@@ -20,30 +20,14 @@ export class InsRegistroSalidaService {
   }
 
   //Función validateTires:
-  private validateTires(tipoVehiculo: string, llantas: any[], cantidadLlantas: number): void {
-      let idsPermitidos: number[] = [];
-
-      switch(cantidadLlantas) {
-          case 4:
-              idsPermitidos = [1, 2, 5, 7];
-              break;
-          case 6:
-              idsPermitidos = [1, 2, 5, 6, 7, 8];
-              break;
-          case 10:
-              idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-              break;
-          default:
-              idsPermitidos = [1, 2, 5, 7];
-      }
-    
+  private validateTires(tipoVehiculo: string, llantas: any[]): void {
+      const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
       const idsEnviados = llantas.map(llanta => llanta.id);
-      const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
       
       const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
       
       if (idsInvalidos.length > 0) {
-          throw new Error(`El vehículo no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
+          throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
       }
   }
 
