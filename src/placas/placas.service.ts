@@ -79,9 +79,9 @@ export class PlacasService {
       }
   }
 
-  async getTiposVehiculo(): Promise<Record<string, { tipo: string, llantas: number }>> {
+  async getTiposVehiculo(): Promise<Record<string, string>> {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-      const range = 'Lista de Placas!C2:E'; // Columna C: Placa, Columna D: Tipo de Vehículo
+      const range = 'Lista de Placas!C2:D'; // Columna C: Placa, Columna D: Tipo de Vehículo
   
       try {
           const { data } = await this.sheets.spreadsheets.values.get({
@@ -94,14 +94,13 @@ export class PlacasService {
               return {};
           }
   
-          const tiposMap: Record<string, { tipo: string, llantas: number }> = {};
+          const tiposMap: Record<string, string> = {};
           
           data.values.forEach(row => {
-              if (row.length >= 3 && row[0] && row[1] && row[2]) {
+              if (row.length >= 2 && row[0] && row[1]) {
                   const placa = row[0].toString().trim().toUpperCase();
                   const tipo = row[1].toString().trim().toLowerCase();
-                  const llantas = parseInt(row[2].toString().trim()) || 4;
-                  tiposMap[placa] = { tipo, llantas };
+                  tiposMap[placa] = tipo;
               }
           });
   
