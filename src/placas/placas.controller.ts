@@ -30,7 +30,7 @@ export class PlacasController {
   }
 
   @Get('get-tipos-vehiculo')
-  async getTiposVehiculo() {
+  async getTiposVehiculo(): Promise<Record<string, { tipo: string, llantas: number }>> {
       try {
           const data = await this.placasService.getTiposVehiculo();
           return data;
