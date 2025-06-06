@@ -50,14 +50,4 @@ export class PlacasController {
           return [];
       }
   }
-
-  @Get('get-cantidad-llantas')
-  async getCantidadLlantas() {
-    try {
-      return await this.placasService.getCantidadLlantas();
-    } catch (error) {
-      console.error('Error:', error);
-      return {};
-    }
-  }
 }
