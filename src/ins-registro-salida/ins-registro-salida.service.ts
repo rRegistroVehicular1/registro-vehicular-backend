@@ -31,19 +31,16 @@ export class InsRegistroSalidaService {
       }
   }
 
-  private normalizeTiresData(llantas: any[]): any[] {
+  private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     console.log("Llantas antes de normalizar:", llantas); // ← Debe ser un array válido
     // Crea un array con 10 posiciones (para llanta1 a llanta10)
     const normalized = Array(10).fill(null);
     
     // Mapeo de IDs de llantas a posiciones en el array
     const indexMap = {
-      1: 0,   // llanta1 (delantera izquierda)
-      2: 1,   // llanta2 (delantera derecha)
-      5: 4,   // llanta5 (trasera derecha)
-      6: 5   // llanta6 (extra trasera derecha)
-      7: 6,   // llanta3 (trasera izquierda)
-      8: 7,   // llanta4 (extra trasera izquierda)
+      4: [1, 2, 5, 7],
+      6: [1, 2, 5, 6, 7, 8],
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     };
 
     llantas.forEach(llanta => {
