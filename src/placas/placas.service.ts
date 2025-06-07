@@ -144,6 +144,35 @@ export class PlacasService {
       }
   }
 
+  async getCantidadLlantas(): Promise<Record<string, number>> {
+    const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+    const range = 'Lista de Placas!C2:E'; // C: Placa, E: Cantidad de llantas
+  
+    try {
+      const { data } = await this.sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+      });
+  
+      if (!data.values) return {};
+  
+      const cantidadMap: Record<string, number> = {};
+      
+      data.values.forEach(row => {
+        if (row.length >= 3 && row[0] && row[2]) {
+          const placa = row[0].toString().trim().toUpperCase();
+          const cantidad = parseInt(row[2]) || 4; // Default 4 si no hay dato
+          cantidadMap[placa] = cantidad;
+        }
+      });
+  
+      return cantidadMap;
+    } catch (error) {
+      console.error('Error al obtener cantidad de llantas:', error);
+      return {};
+    }
+  }
+
   // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
