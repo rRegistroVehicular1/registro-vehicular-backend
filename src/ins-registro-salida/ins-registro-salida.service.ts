@@ -33,19 +33,21 @@ export class InsRegistroSalidaService {
 
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     console.log("Llantas antes de normalizar:", llantas); // ← Debe ser un array válido
+    
     // Crea un array con 10 posiciones (para llanta1 a llanta10)
     const normalized = Array(10).fill(null);
     
     // Mapeo de IDs de llantas a posiciones en el array
     const indexMap = {
-      4: [1, 2, 5, 7],
-      6: [1, 2, 5, 6, 7, 8],
-      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      4: [1, 2, 5, 7], // 4 llantas: delanteras y traseras básicas
+      6: [1, 2, 5, 6, 7, 8], // 6 llantas: incluye extras traseras
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // 10 llantas: todas
     };
 
     llantas.forEach(llanta => {
-      if (llanta?.id !== undefined && indexMap[llanta.id] !== undefined) {
-        normalized[indexMap[llanta.id]] = llanta;
+      if (llanta?.id !== undefined && indexMap[cantidadLlantas].includes(llanta.id)) {
+        const index = indexMap[cantidadLlantas].indexOf(llanta.id);
+        normalized[index] = llanta;
       }
     });
 
@@ -71,6 +73,7 @@ export class InsRegistroSalidaService {
     insumos: any[],
     documentacion: any[],
     dasCarroceria: any[],
+    cantidadLlantas: number = 4 // Valor por defecto 4 si no se especifica
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     console.log(spreadsheetId);
@@ -98,7 +101,7 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      llantas = this.normalizeTiresData(this.processJSON(llantas));
+      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
@@ -128,6 +131,7 @@ export class InsRegistroSalidaService {
         fluidos,
         observacionGeneralFluido,
         observacionGeneralVisuales,
+        cantidadLlantas,
         ...arrays,
       });
 
@@ -247,6 +251,7 @@ export class InsRegistroSalidaService {
     observacionGeneralLlantas,
     observacionGeneralFluido,
     observacionGeneralVisuales,
+    cantidadLlantas,
     ...arrays
   }: any) {
     const {
