@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { AppService } from 'src/app.service';
 import { google } from 'googleapis';
 import { SalidasService } from 'src/salidas/salidas.service';
 import * as dotenv from 'dotenv';
+import { AppService } from 'src/app.service';
+
 dotenv.config();
 
 @Injectable()
 export class InsRegistroSalidaService {
-
   private sheets: any;
   private auth: any;
 
@@ -16,157 +16,43 @@ export class InsRegistroSalidaService {
     private readonly salidasService: SalidasService,
   ) {
     this.auth = this.appService['auth'];
-    this.sheets = google.sheets({ version: 'v4', auth: this.auth })
+    this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  //Función validateTires:
-  private validateTires(tipoVehiculo: string, llantas: any[]): void {
-      const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
-      const idsEnviados = llantas.map(llanta => llanta.id);
-      
-      const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-      
-      if (idsInvalidos.length > 0) {
-          throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
-      }
+  private validateTires(cantidadLlantas: number, llantas: any[]): void {
+    const configuracionesValidas = {
+      4: [1, 2, 5, 7],
+      6: [1, 2, 5, 6, 7, 8],
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    };
+
+    const idsPermitidos = configuracionesValidas[cantidadLlantas] || [];
+    const idsEnviados = llantas.map(llanta => llanta.id);
+    
+    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+    
+    if (idsInvalidos.length > 0) {
+      throw new Error(`Configuración de ${cantidadLlantas} llantas no permite IDs: ${idsInvalidos.join(', ')}`);
+    }
   }
 
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
-    console.log("Llantas antes de normalizar:", llantas); // ← Debe ser un array válido
-    
-    // Crea un array con 10 posiciones (para llanta1 a llanta10)
-    const normalized = Array(10).fill(null);
-    
-    // Mapeo de IDs de llantas a posiciones en el array
-    const indexMap = {
-      4: [1, 2, 5, 7], // 4 llantas: delanteras y traseras básicas
-      6: [1, 2, 5, 6, 7, 8], // 6 llantas: incluye extras traseras
-      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // 10 llantas: todas
+    const posiciones = {
+      4: { 1: 0, 2: 1, 5: 2, 7: 3 },
+      6: { 1: 0, 2: 1, 5: 2, 6: 3, 7: 4, 8: 5 },
+      10: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9 }
     };
 
+    const normalized = Array(10).fill(null);
+    const mapeo = posiciones[cantidadLlantas] || posiciones[4];
+
     llantas.forEach(llanta => {
-      if (llanta?.id !== undefined && indexMap[cantidadLlantas].includes(llanta.id)) {
-        const index = indexMap[cantidadLlantas].indexOf(llanta.id);
-        normalized[index] = llanta;
+      if (llanta?.id !== undefined && mapeo[llanta.id] !== undefined) {
+        normalized[mapeo[llanta.id]] = llanta;
       }
     });
 
-    console.log("Llantas normalizadas:", normalized); // ← Debe tener objetos en posiciones correctas
-    
     return normalized;
-  }
-
-  async handleData(
-    placa: string,
-    conductor: string,
-    sucursal: string,
-    tipoVehiculo: string,
-    odometroSalida: string,
-    estadoSalida: string,
-    llantas: any[],
-    observacionGeneralLlantas: string,
-    fluidos: any[],
-    observacionGeneralFluido: string,
-    parametrosVisuales: any[],
-    observacionGeneralVisuales: string,
-    luces: any[],
-    insumos: any[],
-    documentacion: any[],
-    dasCarroceria: any[],
-    cantidadLlantas: number = 4 // Valor por defecto 4 si no se especifica
-  ) {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    console.log(spreadsheetId);
-
-    try {
-      // 1. Primero validamos las llantas (nueva línea a agregar)
-      this.validateTires(tipoVehiculo, llantas);
-      
-      const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'America/Panama',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(new Date());
-
-      const HoraSalida = new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'America/Panama',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(new Date());
-
-      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
-      fluidos = this.processJSON(fluidos);
-      parametrosVisuales = this.processJSON(parametrosVisuales);
-      luces = this.processJSON(luces);
-      insumos = this.processJSON(insumos);
-      documentacion = this.processJSON(documentacion);
-      dasCarroceria = this.processJSON(dasCarroceria);
-
-      const arrays = this.initializeArrays({
-        llantas,
-        fluidos,
-        parametrosVisuales,
-        luces,
-        insumos,
-        documentacion,
-        dasCarroceria,
-      });
-
-      const values = this.buildValues({
-        fechaHoraActual,
-        placa,
-        conductor,
-        sucursal,
-        tipoVehiculo,
-        odometroSalida,
-        estadoSalida,
-        observacionGeneralLlantas,
-        fluidos,
-        observacionGeneralFluido,
-        observacionGeneralVisuales,
-        cantidadLlantas,
-        ...arrays,
-      });
-
-      const response = await this.sheets.spreadsheets.values.append({
-        auth: this.auth,
-        spreadsheetId,
-        range: 'Hoja 1!A2',
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: values,
-        },
-      });
-
-      const updatedRange = response.data.updates.updatedRange;
-      const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
-
-      await this.sheets.spreadsheets.values.update({
-        auth: this.auth,
-        spreadsheetId,
-        range: `Hoja 1!GF${filaInsertada}`,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [[HoraSalida]],
-        },
-      });
-
-      await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
-
-      console.log('Datos enviados correctamente a Google Sheets.');
-      return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
-    } catch (error) {
-      console.error('Error en validación de llantas:', error);
-      console.error('Error al procesar datos o subir el archivo:', error.response?.data || error.message || error);
-      throw new Error('Error al procesar datos o subir el archivo');
-    }
   }
 
   private processJSON(data: any): any {
@@ -174,7 +60,7 @@ export class InsRegistroSalidaService {
       try {
         return JSON.parse(data);
       } catch (error) {
-        console.error('Error al analizar la cadena JSON:', error);
+        console.error('Error al analizar JSON:', error);
         return [];
       }
     }
@@ -251,7 +137,6 @@ export class InsRegistroSalidaService {
     observacionGeneralLlantas,
     observacionGeneralFluido,
     observacionGeneralVisuales,
-    cantidadLlantas,
     ...arrays
   }: any) {
     const {
@@ -265,7 +150,7 @@ export class InsRegistroSalidaService {
       documentacion5, documentacion6, documentacion7, documentacion8,
       dasCarroceria1, dasCarroceria2, dasCarroceria3, dasCarroceria4,
     } = arrays;
-    
+
     return [
       [
         fechaHoraActual,
@@ -333,21 +218,21 @@ export class InsRegistroSalidaService {
         insumo8?.disponibleSi ? "sí" : insumo8?.disponibleNo ? "no" : "N/A",
         "",
         documentacion1?.nombre,
-        documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A" ,
+        documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A",
         documentacion2?.nombre,
-        documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A" ,
+        documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A",
         documentacion3?.nombre,
-        documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A" ,
+        documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A",
         documentacion4?.nombre,
-        documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A" ,
+        documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A",
         documentacion5?.nombre,
-        documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A" ,
+        documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A",
         documentacion6?.nombre,
-        documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A" ,
+        documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A",
         documentacion7?.nombre,
-        documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A" ,
+        documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A",
         documentacion8?.nombre,
-        documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A" ,
+        documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A",
         "",
         "Daño 1", dasCarroceria1?.vista, dasCarroceria1?.rayones ? "X" : "no", dasCarroceria1?.golpes ? "/" : "no", dasCarroceria1?.quebrado ? "O" : "no",
         dasCarroceria1?.faltante ? "*" : "no",
@@ -361,58 +246,135 @@ export class InsRegistroSalidaService {
     ];
   }
 
-  // async actualizarNumeroConsecutivo(sucursal: string) {
-  //   const spreadsheetIdConsecutivos = process.env.GOOGLE_NUMEROS_CONSECUTIVOS
+  async handleData(
+    placa: string,
+    conductor: string,
+    sucursal: string,
+    tipoVehiculo: string,
+    odometroSalida: string,
+    estadoSalida: string,
+    llantas: any[],
+    observacionGeneralLlantas: string,
+    fluidos: any[],
+    observacionGeneralFluido: string,
+    parametrosVisuales: any[],
+    observacionGeneralVisuales: string,
+    luces: any[],
+    insumos: any[],
+    documentacion: any[],
+    dasCarroceria: any[],
+  ) {
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    
+    try {
+      // Obtener cantidad de llantas para esta placa
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: process.env.GOOGLE_SPREADSHEETIDPLACAS,
+        range: `Lista de Placas!C2:E`,
+      });
 
-  //   try {
-  //     // Leer los datos actuales del archivo de consecutivos
-  //     const consecutivosData = await this.sheets.spreadsheets.values.get({
-  //       auth: this.auth,
-  //       spreadsheetId: spreadsheetIdConsecutivos,
-  //       range: 'Hoja 1!A:Z', // Asegúrate de que este rango incluye todas las sucursales
-  //     });
+      let cantidadLlantas = 4; // Valor por defecto
+      const placaUpper = placa.toUpperCase();
+      
+      if (response.data.values) {
+        const placaData = response.data.values.find(row => 
+          row[0]?.toString().trim().toUpperCase() === placaUpper
+        );
+        cantidadLlantas = placaData?.[2] ? parseInt(placaData[2]) : 4;
+      }
 
-  //     const rows = consecutivosData.data.values || [];
-  //     if (rows.length === 0) {
-  //       throw new Error('El archivo de consecutivos está vacío.');
-  //     }
+      // Validar llantas
+      this.validateTires(cantidadLlantas, llantas);
 
-  //     // Buscar la columna correspondiente a la sucursal
-  //     const headerRow = rows[0]; // Primera fila con los mbres de las sucursales
-  //     const columnaSucursal = headerRow.indexOf(sucursal);
+      const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'America/Panama',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date());
 
-  //     if (columnaSucursal === -1) {
-  //       throw new Error(`La sucursal "${sucursal}"  existe en el archivo de consecutivos.`);
-  //     }
+      const HoraSalida = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'America/Panama',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date());
 
-  //     // Obtener los números consecutivos existentes para la sucursal
-  //     const numerosSucursal = rows.slice(1).map((row) => parseInt(row[columnaSucursal] || '0', 10));
-  //     const ultimoNumero = Math.max(...numerosSucursal, 0); // Encontrar el último número consecutivo
+      // Normalizar datos
+      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
+      fluidos = this.processJSON(fluidos);
+      parametrosVisuales = this.processJSON(parametrosVisuales);
+      luces = this.processJSON(luces);
+      insumos = this.processJSON(insumos);
+      documentacion = this.processJSON(documentacion);
+      dasCarroceria = this.processJSON(dasCarroceria);
 
-  //     // Generar el nuevo número consecutivo
-  //     const nuevoNumero = ultimoNumero + 1;
+      const arrays = this.initializeArrays({
+        llantas,
+        fluidos,
+        parametrosVisuales,
+        luces,
+        insumos,
+        documentacion,
+        dasCarroceria,
+      });
 
-  //     // Crear una nueva fila con el nuevo número en la columna de la sucursal
-  //     const nuevaFila = Array(headerRow.length).fill('');
-  //     nuevaFila[columnaSucursal] = nuevoNumero;
+      const values = this.buildValues({
+        fechaHoraActual,
+        placa,
+        conductor,
+        sucursal,
+        tipoVehiculo,
+        odometroSalida,
+        estadoSalida,
+        observacionGeneralLlantas,
+        observacionGeneralFluido,
+        observacionGeneralVisuales,
+        ...arrays,
+      });
 
-  //     // Guardar el nuevo número en el archivo
-  //     await this.sheets.spreadsheets.values.append({
-  //       auth: this.auth,
-  //       spreadsheetId: spreadsheetIdConsecutivos,
-  //       range: 'Hoja 1',
-  //       valueInputOption: 'RAW',
-  //       requestBody: {
-  //         values: [nuevaFila],
-  //       },
-  //     });
+      const responseInsert = await this.sheets.spreadsheets.values.append({
+        auth: this.auth,
+        spreadsheetId,
+        range: 'Hoja 1!A2',
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: values,
+        },
+      });
 
-  //     console.log(`Nuevo número consecutivo para la sucursal "${sucursal}": ${nuevoNumero}`);
-  //     return nuevoNumero;
-  //   } catch (error) {
-  //     console.error('Error al actualizar el número consecutivo:', error.response?.data || error.message || error);
-  //     throw new Error('Error al actualizar el número consecutivo');
-  //   }
-  // }
-  
+      const updatedRange = responseInsert.data.updates.updatedRange;
+      const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
+
+      await this.sheets.spreadsheets.values.update({
+        auth: this.auth,
+        spreadsheetId,
+        range: `Hoja 1!GF${filaInsertada}`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [[HoraSalida]],
+        },
+      });
+
+      await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
+
+      return { 
+        message: 'Datos procesados correctamente',
+        cantidadLlantas,
+        filaInsertada
+      };
+    } catch (error) {
+      console.error('Error al procesar datos:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response?.data
+      });
+      throw new Error(`Error al procesar datos: ${error.message}`);
+    }
+  }
 }
