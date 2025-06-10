@@ -50,4 +50,15 @@ export class PlacasController {
           return [];
       }
   }
+
+  @Get('get-cantidad-llantas')
+  async getCantidadLlantas() {
+    try {
+      const data = await this.placasService.getCantidadLlantas();
+      return data;
+    } catch (error) {
+      console.error('Error en controller al obtener cantidad de llantas:', error);
+      return {};
+    }
+  }
 }
