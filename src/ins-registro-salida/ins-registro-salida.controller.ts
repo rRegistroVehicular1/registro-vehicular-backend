@@ -20,7 +20,6 @@ export class InsRegistroSalidaController {
       tipoVehiculo,
       odometroSalida,
       llantas,
-      cantidadLlantas, // Nueva propiedad recibida desde el frontend
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
@@ -33,14 +32,8 @@ export class InsRegistroSalidaController {
     } = body;
 
     const estadoSalida = "salida";
-    
-    // Validación de la cantidad de llantas
-    const cantidadValidada = this.validarCantidadLlantas(cantidadLlantas);
-    
-    console.log("Datos recibidos - Cantidad de llantas:", cantidadValidada);
-    console.log("Datos recibidos - Llantas:", body.llantas);
-
-    let llantasArray: any[] = [];
+    console.log("Datos recibidos - Llantas:", body.llantas); // ← Verifica aquí
+    let llantasArray : any [] = [];
     try {
       llantasArray = typeof body.llantas === 'string' 
         ? JSON.parse(body.llantas) 
@@ -49,16 +42,14 @@ export class InsRegistroSalidaController {
       if (!Array.isArray(llantasArray)) {
         throw new Error("Llantas no es un array válido");
       }
-
-      // Validar que la cantidad de llantas coincida con la configuración
-      this.validarConfiguracionLlantas(llantasArray, cantidadValidada);
-
     } catch (error) {
       console.error("Error al parsear llantas:", error);
-      llantasArray = [];
+      llantasArray = []; // Fallback seguro
     }
 
-    console.log("Llantas procesadas (parsed):", llantasArray);
+    console.log("Llantas procesadas (parsed):", llantasArray); // Debug
+    
+    const todasLlantas = [...llantasArray];
 
     const result = await this.InsRegistroSalidaService.handleData(
       placa,
@@ -66,9 +57,8 @@ export class InsRegistroSalidaController {
       sucursal,
       tipoVehiculo,
       odometroSalida,
-      estadoSalida,
-      llantasArray,
-      cantidadValidada, // Pasamos la cantidad validada
+      estadoSalida, 
+      todasLlantas,
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
@@ -81,32 +71,5 @@ export class InsRegistroSalidaController {
     );
 
     return result;
-  }
-
-  private validarCantidadLlantas(cantidad: any): number {
-    const cant = parseInt(cantidad);
-    if ([4, 6, 10].includes(cant)) {
-      return cant;
-    }
-    console.warn(`Cantidad de llantas inválida: ${cantidad}. Usando valor por defecto 4`);
-    return 4;
-  }
-
-  private validarConfiguracionLlantas(llantas: any[], cantidad: number): void {
-    const configuracionesValidas = {
-      4: [1, 2, 5, 7],    // IDs para 4 llantas
-      6: [1, 2, 5, 6, 7, 8], // IDs para 6 llantas
-      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // IDs para 10 llantas
-    };
-
-    const idsPermitidos = configuracionesValidas[cantidad] || configuracionesValidas[4];
-    const idsRecibidos = llantas.map(l => l.id).filter(id => id !== undefined);
-
-    const idsInvalidos = idsRecibidos.filter(id => !idsPermitidos.includes(id));
-    
-    if (idsInvalidos.length > 0) {
-      console.error(`Configuración inválida de llantas. Cantidad: ${cantidad}, IDs inválidos: ${idsInvalidos.join(', ')}`);
-      throw new Error(`Configuración de llantas no coincide con la cantidad especificada (${cantidad})`);
-    }
   }
 }
