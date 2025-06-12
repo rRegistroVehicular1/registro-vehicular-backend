@@ -87,6 +87,8 @@ export class InsRegistroSalidaService {
         ];
     }
 
+    console.log('Las llantas son: ', llantasNormalizadas)
+
     // Filtrar valores null (por si alguna llanta no fue enviada)
     return llantasNormalizadas.filter(llanta => llanta !== null);
   }
