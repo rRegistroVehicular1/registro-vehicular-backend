@@ -44,30 +44,51 @@ export class InsRegistroSalidaService {
   }
 
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
-    console.log("Llantas antes de normalizar:", llantas);
+    // Crear array con todas las posiciones posibles
+    const todasLasPosiciones = Array(10).fill(null);
     
-    // Mapeo de IDs de llantas a posiciones en el array
-    const indexMap = {
-      1: 0,   // llanta1 (delantera izquierda)
-      2: 1,   // llanta2 (delantera derecha)
-      3: 2,   // llanta3 (central izquierda) - solo para 10 llantas
-      4: 3,   // llanta4 (central derecha) - solo para 10 llantas
-      5: 4,   // llanta5 (trasera derecha)
-      6: 5,   // llanta6 (extra trasera derecha) - solo para 6 y 10 llantas
-      7: 6,   // llanta7 (trasera izquierda)
-      8: 7,   // llanta8 (extra trasera izquierda) - solo para 6 y 10 llantas
-      9: 8,   // llanta9 (extra izquierda) - solo para 10 llantas
-      10: 9   // llanta10 (extra derecha) - solo para 10 llantas
-    };
-
-    // Crear array con la cantidad correcta de posiciones
-    const normalized = Array(cantidadLlantas).fill(null).map((_, i) => {
-      const llantaId = Object.keys(indexMap).find(key => indexMap[key] === i);
-      return llantas.find(ll => ll?.id === parseInt(llantaId)) || null;
+    // Mapear las llantas recibidas a sus posiciones
+    llantas.forEach(llanta => {
+      if (llanta && llanta.id >= 1 && llanta.id <= 10) {
+        todasLasPosiciones[llanta.id - 1] = llanta;
+      }
     });
 
-    console.log("Llantas normalizadas:", normalized);
-    return normalized;
+    // Seleccionar solo las llantas necesarias según la cantidad
+    let llantasNormalizadas = [];
+    switch(cantidadLlantas) {
+      case 4:
+        llantasNormalizadas = [
+          todasLasPosiciones[0], // ID 1
+          todasLasPosiciones[1], // ID 2
+          todasLasPosiciones[4], // ID 5
+          todasLasPosiciones[6]  // ID 7
+        ];
+        break;
+      case 6:
+        llantasNormalizadas = [
+          todasLasPosiciones[0], // ID 1
+          todasLasPosiciones[1], // ID 2
+          todasLasPosiciones[4], // ID 5
+          todasLasPosiciones[5], // ID 6
+          todasLasPosiciones[6], // ID 7
+          todasLasPosiciones[7]  // ID 8
+        ];
+        break;
+      case 10:
+        llantasNormalizadas = todasLasPosiciones;
+        break;
+      default:
+        llantasNormalizadas = [
+          todasLasPosiciones[0],
+          todasLasPosiciones[1],
+          todasLasPosiciones[4],
+          todasLasPosiciones[6]
+        ];
+    }
+
+    // Filtrar valores null (por si alguna llanta no fue enviada)
+    return llantasNormalizadas.filter(llanta => llanta !== null);
   }
 
   private processJSON(data: any): any {
@@ -280,7 +301,6 @@ export class InsRegistroSalidaService {
     dasCarroceria: any[],
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    console.log(spreadsheetId);
 
     try {
       // Obtener cantidad de llantas para esta placa
@@ -300,9 +320,10 @@ export class InsRegistroSalidaService {
         }
       }
 
-      // Validar llantas según la cantidad configurada
+      // Validar y normalizar las llantas según la cantidad configurada
       this.validateTires(cantidadLlantas, llantas);
-      
+      const llantasNormalizadas = this.normalizeTiresData(llantas, cantidadLlantas);
+
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
         year: 'numeric',
@@ -322,22 +343,14 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
-      fluidos = this.processJSON(fluidos);
-      parametrosVisuales = this.processJSON(parametrosVisuales);
-      luces = this.processJSON(luces);
-      insumos = this.processJSON(insumos);
-      documentacion = this.processJSON(documentacion);
-      dasCarroceria = this.processJSON(dasCarroceria);
-
       const arrays = this.initializeArrays({
-        llantas,
-        fluidos,
-        parametrosVisuales,
-        luces,
-        insumos,
-        documentacion,
-        dasCarroceria,
+        llantas: llantasNormalizadas,
+        fluidos: this.processJSON(fluidos),
+        parametrosVisuales: this.processJSON(parametrosVisuales),
+        luces: this.processJSON(luces),
+        insumos: this.processJSON(insumos),
+        documentacion: this.processJSON(documentacion),
+        dasCarroceria: this.processJSON(dasCarroceria),
       });
 
       const values = this.buildValues({
