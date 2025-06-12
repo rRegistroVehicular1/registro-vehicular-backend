@@ -32,8 +32,9 @@ export class InsRegistroSalidaController {
     } = body;
 
     const estadoSalida = "salida";
-    console.log("Datos recibidos - Llantas:", body.llantas); // ← Verifica aquí
-    let llantasArray : any [] = [];
+    
+    // Validación y parseo de llantas
+    let llantasArray: any[] = [];
     try {
       llantasArray = typeof body.llantas === 'string' 
         ? JSON.parse(body.llantas) 
@@ -42,12 +43,18 @@ export class InsRegistroSalidaController {
       if (!Array.isArray(llantasArray)) {
         throw new Error("Llantas no es un array válido");
       }
+
+      // Validar que las llantas coincidan con la cantidad esperada
+      const cantidadLlantas = llantasArray.length;
+      if (![4, 6, 10].includes(cantidadLlantas)) {
+        throw new Error(`Cantidad de llantas inválida: ${cantidadLlantas}. Debe ser 4, 6 o 10.`);
+      }
     } catch (error) {
-      console.error("Error al parsear llantas:", error);
-      llantasArray = []; // Fallback seguro
+      console.error("Error al procesar llantas:", error);
+      throw new Error(`Error en datos de llantas: ${error.message}`);
     }
 
-    console.log("Llantas procesadas (parsed):", llantasArray); // Debug
+    console.log("Llantas procesadas:", llantasArray.length, "items"); // Debug
     
     const todasLlantas = [...llantasArray];
 
