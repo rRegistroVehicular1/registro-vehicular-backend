@@ -23,13 +23,13 @@ export class InsRegistroSalidaService {
     
     switch(cantidadLlantas) {
       case 4:
-        idsPermitidos = [1, 2, 5, 7];
+        idsPermitidos = [1, 2, 5, 7]; // Delantera izq/der, Trasera der/izq
         break;
       case 6:
-        idsPermitidos = [1, 2, 5, 6, 7, 8];
+        idsPermitidos = [1, 2, 5, 6, 7, 8]; // Delantera + Trasera + Extras
         break;
       case 10:
-        idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Todas las posiciones
         break;
       default:
         idsPermitidos = [1, 2, 5, 7]; // Default a 4 llantas
@@ -46,153 +46,28 @@ export class InsRegistroSalidaService {
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     console.log("Llantas antes de normalizar:", llantas);
     
-    // Crea un array con 10 posiciones (para llanta1 a llanta10)
-    const normalized = Array(10).fill(null);
-    
     // Mapeo de IDs de llantas a posiciones en el array
     const indexMap = {
       1: 0,   // llanta1 (delantera izquierda)
       2: 1,   // llanta2 (delantera derecha)
-      3: 2,   // llanta3 (central izquierda)
-      4: 3,   // llanta4 (central derecha)
+      3: 2,   // llanta3 (central izquierda) - solo para 10 llantas
+      4: 3,   // llanta4 (central derecha) - solo para 10 llantas
       5: 4,   // llanta5 (trasera derecha)
-      6: 5,   // llanta6 (extra trasera derecha)
+      6: 5,   // llanta6 (extra trasera derecha) - solo para 6 y 10 llantas
       7: 6,   // llanta7 (trasera izquierda)
-      8: 7,   // llanta8 (extra trasera izquierda)
-      9: 8,   // llanta9 (extra izquierda)
-      10: 9   // llanta10 (extra derecha)
+      8: 7,   // llanta8 (extra trasera izquierda) - solo para 6 y 10 llantas
+      9: 8,   // llanta9 (extra izquierda) - solo para 10 llantas
+      10: 9   // llanta10 (extra derecha) - solo para 10 llantas
     };
 
-    llantas.forEach(llanta => {
-      if (llanta?.id !== undefined && indexMap[llanta.id] !== undefined) {
-        normalized[indexMap[llanta.id]] = llanta;
-      }
+    // Crear array con la cantidad correcta de posiciones
+    const normalized = Array(cantidadLlantas).fill(null).map((_, i) => {
+      const llantaId = Object.keys(indexMap).find(key => indexMap[key] === i);
+      return llantas.find(ll => ll?.id === parseInt(llantaId)) || null;
     });
 
-    // Filtrar según cantidad de llantas
-    let llantasFiltradas = normalized;
-    if (cantidadLlantas === 4) {
-      llantasFiltradas = [normalized[0], normalized[1], normalized[4], normalized[6]];
-    } else if (cantidadLlantas === 6) {
-      llantasFiltradas = [normalized[0], normalized[1], normalized[4], normalized[5], normalized[6], normalized[7]];
-    }
-    // Para 10 llantas se mantienen todas
-
-    console.log("Llantas normalizadas:", llantasFiltradas);
-    return llantasFiltradas;
-  }
-
-  async handleData(
-    placa: string,
-    conductor: string,
-    sucursal: string,
-    tipoVehiculo: string,
-    odometroSalida: string,
-    estadoSalida: string,
-    llantas: any[],
-    observacionGeneralLlantas: string,
-    fluidos: any[],
-    observacionGeneralFluido: string,
-    parametrosVisuales: any[],
-    observacionGeneralVisuales: string,
-    luces: any[],
-    insumos: any[],
-    documentacion: any[],
-    dasCarroceria: any[],
-    cantidadLlantas: number = 4 // Nuevo parámetro con valor por defecto
-  ) {
-    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    console.log(spreadsheetId);
-
-    try {
-      // 1. Validar las llantas según la cantidad
-      this.validateTires(cantidadLlantas, llantas);
-      
-      const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'America/Panama',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(new Date());
-
-      const HoraSalida = new Intl.DateTimeFormat('es-ES', {
-        timeZone: 'America/Panama',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).format(new Date());
-
-      // Normalizar llantas según cantidad
-      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
-      fluidos = this.processJSON(fluidos);
-      parametrosVisuales = this.processJSON(parametrosVisuales);
-      luces = this.processJSON(luces);
-      insumos = this.processJSON(insumos);
-      documentacion = this.processJSON(documentacion);
-      dasCarroceria = this.processJSON(dasCarroceria);
-
-      const arrays = this.initializeArrays({
-        llantas,
-        fluidos,
-        parametrosVisuales,
-        luces,
-        insumos,
-        documentacion,
-        dasCarroceria,
-      });
-
-      const values = this.buildValues({
-        fechaHoraActual,
-        placa,
-        conductor,
-        sucursal,
-        tipoVehiculo,
-        odometroSalida,
-        estadoSalida,
-        observacionGeneralLlantas,
-        fluidos,
-        observacionGeneralFluido,
-        observacionGeneralVisuales,
-        ...arrays,
-      });
-
-      const response = await this.sheets.spreadsheets.values.append({
-        auth: this.auth,
-        spreadsheetId,
-        range: 'Hoja 1!A2',
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: values,
-        },
-      });
-
-      const updatedRange = response.data.updates.updatedRange;
-      const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
-
-      await this.sheets.spreadsheets.values.update({
-        auth: this.auth,
-        spreadsheetId,
-        range: `Hoja 1!GF${filaInsertada}`,
-        valueInputOption: 'RAW',
-        requestBody: {
-          values: [[HoraSalida]],
-        },
-      });
-
-      await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
-
-      console.log('Datos enviados correctamente a Google Sheets.');
-      return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
-    } catch (error) {
-      console.error('Error en validación de llantas:', error);
-      console.error('Error al procesar datos o subir el archivo:', error.response?.data || error.message || error);
-      throw new Error('Error al procesar datos o subir el archivo');
-    }
+    console.log("Llantas normalizadas:", normalized);
+    return normalized;
   }
 
   private processJSON(data: any): any {
@@ -384,5 +259,131 @@ export class InsRegistroSalidaService {
         dasCarroceria4?.faltante ? "*" : "no"
       ],
     ];
+  }
+
+  async handleData(
+    placa: string,
+    conductor: string,
+    sucursal: string,
+    tipoVehiculo: string,
+    odometroSalida: string,
+    estadoSalida: string,
+    llantas: any[],
+    observacionGeneralLlantas: string,
+    fluidos: any[],
+    observacionGeneralFluido: string,
+    parametrosVisuales: any[],
+    observacionGeneralVisuales: string,
+    luces: any[],
+    insumos: any[],
+    documentacion: any[],
+    dasCarroceria: any[],
+  ) {
+    const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
+    console.log(spreadsheetId);
+
+    try {
+      // Obtener cantidad de llantas para esta placa
+      const cantidadResponse = await this.sheets.spreadsheets.values.get({
+        auth: this.auth,
+        spreadsheetId: process.env.GOOGLE_SPREADSHEETIDPLACAS,
+        range: 'Lista de Placas!C2:E',
+      });
+      
+      let cantidadLlantas = 4; // Valor por defecto
+      if (cantidadResponse.data.values) {
+        const placaRow = cantidadResponse.data.values.find(row => 
+          row[0]?.toString().trim().toUpperCase() === placa.toUpperCase()
+        );
+        if (placaRow && placaRow[2]) {
+          cantidadLlantas = parseInt(placaRow[2]) || 4;
+        }
+      }
+
+      // Validar llantas según la cantidad configurada
+      this.validateTires(cantidadLlantas, llantas);
+      
+      const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'America/Panama',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date());
+
+      const HoraSalida = new Intl.DateTimeFormat('es-ES', {
+        timeZone: 'America/Panama',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date());
+
+      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
+      fluidos = this.processJSON(fluidos);
+      parametrosVisuales = this.processJSON(parametrosVisuales);
+      luces = this.processJSON(luces);
+      insumos = this.processJSON(insumos);
+      documentacion = this.processJSON(documentacion);
+      dasCarroceria = this.processJSON(dasCarroceria);
+
+      const arrays = this.initializeArrays({
+        llantas,
+        fluidos,
+        parametrosVisuales,
+        luces,
+        insumos,
+        documentacion,
+        dasCarroceria,
+      });
+
+      const values = this.buildValues({
+        fechaHoraActual,
+        placa,
+        conductor,
+        sucursal,
+        tipoVehiculo,
+        odometroSalida,
+        estadoSalida,
+        observacionGeneralLlantas,
+        observacionGeneralFluido,
+        observacionGeneralVisuales,
+        ...arrays,
+      });
+
+      const response = await this.sheets.spreadsheets.values.append({
+        auth: this.auth,
+        spreadsheetId,
+        range: 'Hoja 1!A2',
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: values,
+        },
+      });
+
+      const updatedRange = response.data.updates.updatedRange;
+      const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
+
+      await this.sheets.spreadsheets.values.update({
+        auth: this.auth,
+        spreadsheetId,
+        range: `Hoja 1!GF${filaInsertada}`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [[HoraSalida]],
+        },
+      });
+
+      await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
+
+      console.log('Datos enviados correctamente a Google Sheets.');
+      return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
+    } catch (error) {
+      console.error('Error al procesar datos o subir el archivo:', error.response?.data || error.message || error);
+      throw new Error('Error al procesar datos o subir el archivo');
+    }
   }
 }
