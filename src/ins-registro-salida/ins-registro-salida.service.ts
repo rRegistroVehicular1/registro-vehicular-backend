@@ -50,14 +50,14 @@ export class InsRegistroSalidaService {
     const llantasEsperadas = [
       { id: 1, nombre: '1 - Delantera Izquierda' },
       { id: 2, nombre: '2 - Delantera Derecha' },
-      { id: 3, nombre: '3 - Central Izquierda' },
-      { id: 4, nombre: '4 - Central Derecha' },
-      { id: 5, nombre: '5 - Trasera Derecha' },
-      { id: 6, nombre: '6 - Extra Trasera Derecha' },
-      { id: 7, nombre: '7 - Trasera Izquierda' },
-      { id: 8, nombre: '8 - Extra Trasera Izquierda' },
-      { id: 9, nombre: '9 - Extra Izquierda' },
-      { id: 10, nombre: '10 - Extra Derecha' }
+      { id: 3, nombre: '3 - Central Interna Derecha' },
+      { id: 4, nombre: '4 - Central Externa Derecha' },
+      { id: 5, nombre: '5 - Trasera o Trasera Interna Derecha' },
+      { id: 6, nombre: '6 - Trasera Externa Derecha' },
+      { id: 7, nombre: '7 - Trasera o Trasera Interna Izquierda' },
+      { id: 8, nombre: '8 - Trasera Externa Izquierda' },
+      { id: 9, nombre: '9 - Central Interna Izquierda' },
+      { id: 10, nombre: '10 - Central Externa Izquierda' }
     ];
   
     // Determinar qué llantas se esperan según la cantidad
