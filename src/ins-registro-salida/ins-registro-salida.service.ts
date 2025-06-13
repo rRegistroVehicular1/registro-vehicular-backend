@@ -46,26 +46,49 @@ export class InsRegistroSalidaService {
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     console.log("Llantas antes de normalizar:", llantas);
     
-    // Mapeo de IDs de llantas a posiciones en el array
-    const indexMap = {
-      1: 0,   // llanta1 (delantera izquierda)
-      2: 1,   // llanta2 (delantera derecha)
-      3: 2,   // llanta3 (central izquierda) - solo para 10 llantas
-      4: 3,   // llanta4 (central derecha) - solo para 10 llantas
-      5: 4,   // llanta5 (trasera derecha)
-      6: 5,   // llanta6 (extra trasera derecha) - solo para 6 y 10 llantas
-      7: 6,   // llanta7 (trasera izquierda)
-      8: 7,   // llanta8 (extra trasera izquierda) - solo para 6 y 10 llantas
-      9: 8,   // llanta9 (extra izquierda) - solo para 10 llantas
-      10: 9   // llanta10 (extra derecha) - solo para 10 llantas
-    };
-
-    // Crear array con la cantidad correcta de posiciones
-    const normalized = Array(cantidadLlantas).fill(null).map((_, i) => {
-      const llantaId = Object.keys(indexMap).find(key => indexMap[key] === i);
-      return llantas.find(ll => ll?.id === parseInt(llantaId)) || null;
+    // Mapeo de IDs de llantas a posiciones esperadas
+    const llantasEsperadas = [
+      { id: 1, nombre: '1 - Delantera Izquierda' },
+      { id: 2, nombre: '2 - Delantera Derecha' },
+      { id: 3, nombre: '3 - Central Izquierda' },
+      { id: 4, nombre: '4 - Central Derecha' },
+      { id: 5, nombre: '5 - Trasera Derecha' },
+      { id: 6, nombre: '6 - Extra Trasera Derecha' },
+      { id: 7, nombre: '7 - Trasera Izquierda' },
+      { id: 8, nombre: '8 - Extra Trasera Izquierda' },
+      { id: 9, nombre: '9 - Extra Izquierda' },
+      { id: 10, nombre: '10 - Extra Derecha' }
+    ];
+  
+    // Determinar qué llantas se esperan según la cantidad
+    let idsEsperados: number[];
+    switch(cantidadLlantas) {
+      case 4:
+        idsEsperados = [1, 2, 5, 7];
+        break;
+      case 6:
+        idsEsperados = [1, 2, 5, 6, 7, 8];
+        break;
+      case 10:
+        idsEsperados = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        break;
+      default:
+        idsEsperados = [1, 2, 5, 7];
+    }
+  
+    // Crear array con las llantas en el orden esperado
+    const normalized = idsEsperados.map(id => {
+      const llantaEncontrada = llantas.find(ll => ll?.id === id);
+      return llantaEncontrada || { 
+        id, 
+        nombre: llantasEsperadas.find(l => l.id === id)?.nombre || `Llanta ${id}`,
+        fp: false, 
+        pe: false, 
+        pa: false, 
+        desgaste: false 
+      };
     });
-
+  
     console.log("Llantas normalizadas:", normalized);
     return normalized;
   }
