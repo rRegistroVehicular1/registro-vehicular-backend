@@ -20,8 +20,8 @@ export class InsRegistroSalidaService {
   }
 
   //Función validateTires:
-  private validateTires(cantidadLlantas: number, llantas: any[]): void {
-      const idsPermitidos = cantidadLlantas === 4 ? [1, 2, 5, 7] : cantidadLlantas === 6 ? [1, 2, 5, 6, 7, 8] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  private validateTires(cantidadLlantas: string, llantas: any[]): void {
+      const idsPermitidos = cantidadLlantas === '4' ? [1, 2, 5, 7] : cantidadLlantas === '6' ? [1, 2, 5, 6, 7, 8] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const idsEnviados = llantas.map(llanta => llanta.id);
       
       const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
