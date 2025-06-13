@@ -28,7 +28,8 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria
+      danosCarroceria,
+      cantidadLlantas
     } = body;
 
     const estadoSalida = "salida";
@@ -74,7 +75,8 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria
+      danosCarroceria,
+      cantidadLlantas
     );
 
     return result;
