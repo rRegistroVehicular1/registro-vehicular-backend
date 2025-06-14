@@ -7,7 +7,6 @@ dotenv.config();
 
 @Injectable()
 export class InsRegistroSalidaService {
-
   private sheets: any;
   private auth: any;
 
@@ -16,23 +15,36 @@ export class InsRegistroSalidaService {
     private readonly salidasService: SalidasService,
   ) {
     this.auth = this.appService['auth'];
-    this.sheets = google.sheets({ version: 'v4', auth: this.auth })
+    this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  //Función validateTires:
-  private validateTires(tipoVehiculo: string, llantas: any[]): void {
-      const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
-      const idsEnviados = llantas.map(llanta => llanta.id);
-      
-      const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-      
-      if (idsInvalidos.length > 0) {
-          throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
-      }
+  private validateTires(cantidadLlantas: number, llantas: any[]): void {
+    let idsPermitidos: number[];
+    
+    switch(cantidadLlantas) {
+      case 4:
+        idsPermitidos = [1, 2, 5, 7];
+        break;
+      case 6:
+        idsPermitidos = [1, 2, 5, 6, 7, 8];
+        break;
+      case 10:
+        idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        break;
+      default:
+        idsPermitidos = [1, 2, 5, 7];
+    }
+    
+    const idsEnviados = llantas.map(llanta => llanta.id);
+    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+    
+    if (idsInvalidos.length > 0) {
+      throw new Error(`Cantidad de llantas ${cantidadLlantas} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
+    }
   }
 
   private normalizeTiresData(llantas: any[]): any[] {
-    console.log("Llantas antes de normalizar:", llantas); // ← Debe ser un array válido
+    console.log("Llantas antes de normalizar:", llantas);
     // Crea un array con 10 posiciones (para llanta1 a llanta10)
     const normalized = Array(10).fill(null);
     
@@ -40,10 +52,14 @@ export class InsRegistroSalidaService {
     const indexMap = {
       1: 0,   // llanta1 (delantera izquierda)
       2: 1,   // llanta2 (delantera derecha)
+      3: 2,   // llanta3 (extra delantera izquierda)
+      4: 3,   // llanta4 (extra delantera derecha)
       5: 4,   // llanta5 (trasera derecha)
-      6: 5   // llanta6 (extra trasera derecha)
-      7: 6,   // llanta3 (trasera izquierda)
-      8: 7,   // llanta4 (extra trasera izquierda)
+      6: 5,   // llanta6 (extra trasera derecha)
+      7: 6,   // llanta7 (trasera izquierda)
+      8: 7,   // llanta8 (extra trasera izquierda)
+      9: 8,   // llanta9 (central izquierda)
+      10: 9   // llanta10 (central derecha)
     };
 
     llantas.forEach(llanta => {
@@ -52,8 +68,7 @@ export class InsRegistroSalidaService {
       }
     });
 
-    console.log("Llantas normalizadas:", normalized); // ← Debe tener objetos en posiciones correctas
-    
+    console.log("Llantas normalizadas:", normalized);
     return normalized;
   }
 
@@ -79,8 +94,12 @@ export class InsRegistroSalidaService {
     console.log(spreadsheetId);
 
     try {
-      // 1. Primero validamos las llantas (nueva línea a agregar)
-      this.validateTires(tipoVehiculo, llantas);
+      // Obtener cantidad de llantas para esta placa
+      const cantidadResponse = await axios.get(`${BASE_URL}/placas/get-cantidad-llantas/${placa}`);
+      const cantidadLlantas = cantidadResponse.data.cantidad || 4;
+      
+      // Validar las llantas según la cantidad
+      this.validateTires(cantidadLlantas, llantas);
       
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
@@ -358,3 +377,4 @@ export class InsRegistroSalidaService {
       ],
     ];
   }
+}
