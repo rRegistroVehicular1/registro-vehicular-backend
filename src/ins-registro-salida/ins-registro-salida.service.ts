@@ -20,19 +20,14 @@ export class InsRegistroSalidaService {
   }
 
   //Función validateTires:
-  private validateTires(cantidadLlantas: string, llantas: any[]): void {
-      const idsPermitidos = cantidadLlantas === '4' ? [1, 2, 5, 7] : cantidadLlantas === '6' ? [1, 2, 5, 6, 7, 8] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  private validateTires(tipoVehiculo: string, llantas: any[]): void {
+      const idsPermitidos = tipoVehiculo === 'camion' ? [1, 2, 5, 6, 7, 8] : [1, 2, 5, 7];
       const idsEnviados = llantas.map(llanta => llanta.id);
       
       const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
       
       if (idsInvalidos.length > 0) {
-          throw new Error(`Tipo de vehículo ${cantidadLlantas} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
-      }
-
-      // Validación adicional para asegurar que el número de llantas coincide
-      if (llantas.length !== cantidadLlantas) {
-          throw new Error(`Se esperaban ${cantidadLlantas} llantas pero se recibieron ${llantas.length}`);
+          throw new Error(`Tipo de vehículo ${tipoVehiculo} no permite llantas con IDs: ${idsInvalidos.join(', ')}`);
       }
   }
 
@@ -49,10 +44,6 @@ export class InsRegistroSalidaService {
       6: 5   // llanta6 (extra trasera derecha)
       7: 6,   // llanta3 (trasera izquierda)
       8: 7,   // llanta4 (extra trasera izquierda)
-      3: 2,
-      4: 3,
-      9: 8,
-      10: 9,
     };
 
     llantas.forEach(llanta => {
