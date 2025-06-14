@@ -97,9 +97,9 @@ export class PlacasService {
           const tiposMap: Record<string, string> = {};
           
           data.values.forEach(row => {
-              if (row.length >= 3 && row[0] && row[2]) {
+              if (row.length >= 2 && row[0] && row[1]) {
                   const placa = row[0].toString().trim().toUpperCase();
-                  const tipo = row[2].toString().trim().toLowerCase();
+                  const tipo = row[1].toString().trim().toLowerCase();
                   tiposMap[placa] = tipo;
               }
           });
