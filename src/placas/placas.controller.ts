@@ -1,4 +1,4 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PlacasService } from './placas.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -49,5 +49,16 @@ export class PlacasController {
           console.error('Error en controller:', error);
           return [];
       }
+  }
+
+  @Get('get-cantidad-llantas/:placa')
+  async getCantidadLlantas(@Param('placa') placa: string) {
+    try {
+      const cantidad = await this.placasService.getCantidadLlantas(placa);
+      return { cantidad };
+    } catch (error) {
+      console.error('Error en controller:', error);
+      return { cantidad: 4 }; // Valor por defecto
+    }
   }
 }
