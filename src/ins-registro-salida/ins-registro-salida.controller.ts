@@ -6,7 +6,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags("ins-registro-salida")
 @Controller('ins-registro-salida')
 export class InsRegistroSalidaController {
-  constructor(private readonly insRegistroSalidaService: InsRegistroSalidaService) { }
+  constructor(private readonly InsRegistroSalidaService: InsRegistroSalidaService) { }
 
   @Post('register')
   @UseInterceptors(FileInterceptor('documento'))
@@ -28,13 +28,12 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria,
-      cantidadLlantas // Nuevo campo recibido del frontend
+      danosCarroceria
     } = body;
 
     const estadoSalida = "salida";
     
-    // Convertir llantas a array si viene como string
+    // Validación y parseo seguro de las llantas
     let llantasArray: any[] = [];
     try {
       llantasArray = typeof body.llantas === 'string' 
@@ -49,18 +48,16 @@ export class InsRegistroSalidaController {
       llantasArray = []; // Fallback seguro
     }
 
-    console.log("Llantas procesadas (parsed):", llantasArray);
+    console.log("Llantas procesadas (parsed):", llantasArray); // Debug
     
-    const todasLlantas = [...llantasArray];
-
-    const result = await this.insRegistroSalidaService.handleData(
+    const result = await this.InsRegistroSalidaService.handleData(
       placa,
       conductor,
       sucursal,
       tipoVehiculo,
       odometroSalida,
       estadoSalida, 
-      todasLlantas,
+      llantasArray, // Enviamos el array ya parseado
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
@@ -69,8 +66,7 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria,
-      cantidadLlantas // Pasamos la cantidad de llantas al servicio
+      danosCarroceria
     );
 
     return result;
