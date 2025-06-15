@@ -1,4 +1,4 @@
-import { Controller, Get, Header } from '@nestjs/common';
+import { Controller, Get, Header, Query } from '@nestjs/common';
 import { PlacasService } from './placas.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -30,7 +30,7 @@ export class PlacasController {
   }
 
   @Get('get-tipos-vehiculo')
-  async getTiposVehiculo() {
+  async getTiposVehiculo(@Query() params: any) {
       try {
           // Obtener tanto los tipos de vehículo como la cantidad de llantas
           const { tipos, llantas } = await this.placasService.getTiposVehiculo();
