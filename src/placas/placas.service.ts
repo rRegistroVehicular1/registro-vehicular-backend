@@ -36,7 +36,7 @@ export class PlacasService {
         .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
         .filter(item => item.length > 0); // Filtra strings vacíos
   
-      console.log('Placas obtenidas:', placas); // Para diagnóstico
+      console.log('Placas obtenidas:', placas);
       return placas;
       
     } catch (error) {
@@ -47,7 +47,7 @@ export class PlacasService {
 
   async getVehiculosFromSheet(): Promise<Record<string, string>> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!A2:C'; // Asumiendo que col A es número de vehículo y col C es placa
+    const range = 'Lista de Placas!A2:C'; // Col A: Número, Col C: Placa
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -63,7 +63,7 @@ export class PlacasService {
       const vehiculosMap: Record<string, string> = {};
       
       data.values.forEach(row => {
-        if (row.length >= 2 && row[0] && row[2]) { // Asegurarse que hay datos en col A y C
+        if (row.length >= 2 && row[0] && row[2]) {
           const numeroVehiculo = row[0].toString().trim();
           const placa = row[2].toString().trim().toUpperCase();
           vehiculosMap[placa] = numeroVehiculo;
@@ -79,9 +79,9 @@ export class PlacasService {
     }
   }
 
-  async getTiposVehiculo(): Promise<Record<string, string>> {
+  async getTiposVehiculo(): Promise<{tipos: Record<string, string>, llantas: Record<string, number>}> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:D'; // Columna C: Placa, Columna D: Tipo de Vehículo
+    const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col D: Tipo, Col E: Llantas
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -90,32 +90,36 @@ export class PlacasService {
       });
 
       if (!data.values) {
-        console.log('No se encontraron datos en el rango especificado');
-        return {};
+        return { tipos: {}, llantas: {} };
       }
 
       const tiposMap: Record<string, string> = {};
+      const llantasMap: Record<string, number> = {};
       
       data.values.forEach(row => {
-        if (row.length >= 2 && row[0] && row[1]) {
+        if (row.length >= 3 && row[0]) {
           const placa = row[0].toString().trim().toUpperCase();
-          const tipo = row[1].toString().trim().toLowerCase();
+          const tipo = row[1]?.toString().trim().toLowerCase() || '';
+          const llantas = parseInt(row[2]?.toString().trim()) || 4;
+          
           tiposMap[placa] = tipo;
+          llantasMap[placa] = [4, 6, 10].includes(llantas) ? llantas : 4;
         }
       });
 
       console.log('Mapa de placas a tipos de vehículo:', tiposMap);
-      return tiposMap;
+      console.log('Mapa de placas a cantidad de llantas:', llantasMap);
+      return { tipos: tiposMap, llantas: llantasMap };
       
     } catch (error) {
-      console.error('Error al obtener tipos de vehículo:', error);
-      return {};
+      console.error('Error al obtener tipos y llantas:', error);
+      return { tipos: {}, llantas: {} };
     }
   }
 
   async getCantidadLlantas(placa: string): Promise<number> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:E'; // Columna C: Placa, E: Cantidad de llantas
+    const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col E: Cantidad de llantas
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -125,17 +129,14 @@ export class PlacasService {
 
       if (!data.values) return 4; // Valor por defecto
 
-      const placaUpper = placa.toUpperCase();
-      const row = data.values.find(row => 
-        row[0]?.toString().trim().toUpperCase() === placaUpper
+      const fila = data.values.find(row => 
+        row[0] && row[0].toString().trim().toUpperCase() === placa.trim().toUpperCase()
       );
+
+      if (!fila || !fila[2]) return 4; // Valor por defecto si no se encuentra
       
-      if (row && row[2]) {
-        const cantidad = parseInt(row[2]);
-        // Validamos que sea 4, 6 o 10
-        return [4, 6, 10].includes(cantidad) ? cantidad : 4;
-      }
-      return 4; // Valor por defecto si no encuentra la placa
+      const cantidad = parseInt(fila[2].toString().trim());
+      return [4, 6, 10].includes(cantidad) ? cantidad : 4; // Validar valores permitidos
     } catch (error) {
       console.error('Error al obtener cantidad de llantas:', error);
       return 4; // Valor por defecto en caso de error
@@ -144,7 +145,7 @@ export class PlacasService {
 
   async getConductoresFromSheet(): Promise<string[]> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Conductores!B2:B'; // Asume que los conductores están en Hoja 2, columna B
+    const range = 'Lista de Conductores!B2:B';
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -161,9 +162,9 @@ export class PlacasService {
       const conductores = data.values
         .flat()
         .map(item => item ? item.toString().trim() : '')
-        .filter(item => item.length > 0 && item !== 'Nombre del Conductor') // Filtra cabecera si existe
-        .filter((value, index, self) => self.indexOf(value) === index) // Elimina duplicados
-        .sort((a, b) => a.localeCompare(b)); // Orden alfabético
+        .filter(item => item.length > 0 && item !== 'Nombre del Conductor')
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .sort((a, b) => a.localeCompare(b));
 
       console.log('Conductores obtenidos:', conductores);
       return conductores;
@@ -173,7 +174,6 @@ export class PlacasService {
     }
   }
 
-  // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
