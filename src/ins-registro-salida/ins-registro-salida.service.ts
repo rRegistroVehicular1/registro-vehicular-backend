@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 import { google } from 'googleapis';
-import axios from 'axios';
 import { SalidasService } from 'src/salidas/salidas.service';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -19,24 +18,11 @@ export class InsRegistroSalidaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
+  // Función para validar que las llantas coincidan con la cantidad esperada
   private validateTires(cantidadLlantas: number, llantas: any[]): void {
-    let idsPermitidos: number[];
-    
-    switch(cantidadLlantas) {
-      case 4:
-        idsPermitidos = [1, 2, 5, 7];
-        break;
-      case 6:
-        idsPermitidos = [1, 2, 5, 6, 7, 8];
-        break;
-      case 10:
-        idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        break;
-      default:
-        idsPermitidos = [1, 2, 5, 7];
-    }
-    
+    const idsPermitidos = this.getTireIdsByQuantity(cantidadLlantas);
     const idsEnviados = llantas.map(llanta => llanta.id);
+    
     const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
     
     if (idsInvalidos.length > 0) {
@@ -44,8 +30,20 @@ export class InsRegistroSalidaService {
     }
   }
 
+  // Función auxiliar para obtener IDs de llantas por cantidad
+  private getTireIdsByQuantity(cantidad: number): number[] {
+    switch(cantidad) {
+      case 4: return [1, 2, 5, 7];     // 4 llantas básicas
+      case 6: return [1, 2, 5, 6, 7, 8]; // 6 llantas (incluye extras traseras)
+      case 10: return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // Todas las llantas
+      default: return [1, 2, 5, 7];    // Por defecto 4 llantas
+    }
+  }
+
+  // Función para normalizar los datos de llantas a un array de 10 posiciones
   private normalizeTiresData(llantas: any[]): any[] {
     console.log("Llantas antes de normalizar:", llantas);
+    
     // Crea un array con 10 posiciones (para llanta1 a llanta10)
     const normalized = Array(10).fill(null);
     
@@ -89,17 +87,16 @@ export class InsRegistroSalidaService {
     luces: any[],
     insumos: any[],
     documentacion: any[],
-    dasCarroceria: any[],
+    danosCarroceria: any[],
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     console.log(spreadsheetId);
 
     try {
-      // Obtener cantidad de llantas para esta placa
-      const cantidadResponse = await axios.get(`${BASE_URL}/placas/get-cantidad-llantas/${placa}`);
-      const cantidadLlantas = cantidadResponse.data.cantidad || 4;
+      // 1. Obtener la cantidad de llantas para esta placa
+      const cantidadLlantas = await this.getCantidadLlantas(placa);
       
-      // Validar las llantas según la cantidad
+      // 2. Validar que las llantas coincidan con la cantidad esperada
       this.validateTires(cantidadLlantas, llantas);
       
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
@@ -121,13 +118,14 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
+      // Procesar los datos recibidos
       llantas = this.normalizeTiresData(this.processJSON(llantas));
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
       insumos = this.processJSON(insumos);
       documentacion = this.processJSON(documentacion);
-      dasCarroceria = this.processJSON(dasCarroceria);
+      danosCarroceria = this.processJSON(danosCarroceria);
 
       const arrays = this.initializeArrays({
         llantas,
@@ -136,7 +134,7 @@ export class InsRegistroSalidaService {
         luces,
         insumos,
         documentacion,
-        dasCarroceria,
+        danosCarroceria,
       });
 
       const values = this.buildValues({
@@ -154,6 +152,7 @@ export class InsRegistroSalidaService {
         ...arrays,
       });
 
+      // Insertar datos en Google Sheets
       const response = await this.sheets.spreadsheets.values.append({
         auth: this.auth,
         spreadsheetId,
@@ -164,9 +163,11 @@ export class InsRegistroSalidaService {
         },
       });
 
+      // Obtener la fila donde se insertaron los datos
       const updatedRange = response.data.updates.updatedRange;
       const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
 
+      // Actualizar hora de salida
       await this.sheets.spreadsheets.values.update({
         auth: this.auth,
         spreadsheetId,
@@ -177,14 +178,45 @@ export class InsRegistroSalidaService {
         },
       });
 
+      // Registrar la salida en la hoja de salidas
       await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
 
       console.log('Datos enviados correctamente a Google Sheets.');
-      return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
+      return { 
+        message: 'Datos procesados y almacenados correctamente en Google Sheets',
+        cantidadLlantas 
+      };
     } catch (error) {
-      console.error('Error en validación de llantas:', error);
-      console.error('Error al procesar datos o subir el archivo:', error.response?.data || error.message || error);
-      throw new Error('Error al procesar datos o subir el archivo');
+      console.error('Error al procesar datos:', error.response?.data || error.message || error);
+      throw new Error('Error al procesar datos: ' + error.message);
+    }
+  }
+
+  // Nueva función para obtener cantidad de llantas desde Google Sheets
+  private async getCantidadLlantas(placa: string): Promise<number> {
+    const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+    const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col E: Cantidad de llantas
+
+    try {
+      const { data } = await this.sheets.spreadsheets.values.get({
+        auth: this.auth,
+        spreadsheetId,
+        range,
+      });
+
+      if (!data.values) return 4; // Valor por defecto
+
+      const fila = data.values.find(row => 
+        row[0] && row[0].toString().trim().toUpperCase() === placa.trim().toUpperCase()
+      );
+
+      if (!fila || !fila[2]) return 4; // Valor por defecto si no se encuentra
+      
+      const cantidad = parseInt(fila[2].toString().trim());
+      return [4, 6, 10].includes(cantidad) ? cantidad : 4; // Validar valores permitidos
+    } catch (error) {
+      console.error('Error al obtener cantidad de llantas:', error);
+      return 4; // Valor por defecto en caso de error
     }
   }
 
@@ -207,7 +239,7 @@ export class InsRegistroSalidaService {
     luces,
     insumos,
     documentacion,
-    dasCarroceria,
+    danosCarroceria,
   }: any) {
     return {
       llanta1: llantas[0],
@@ -252,10 +284,10 @@ export class InsRegistroSalidaService {
       documentacion6: documentacion[5],
       documentacion7: documentacion[6],
       documentacion8: documentacion[7],
-      dasCarroceria1: dasCarroceria[0],
-      dasCarroceria2: dasCarroceria[1],
-      dasCarroceria3: dasCarroceria[2],
-      dasCarroceria4: dasCarroceria[3],
+      danosCarroceria1: danosCarroceria[0],
+      danosCarroceria2: danosCarroceria[1],
+      danosCarroceria3: danosCarroceria[2],
+      danosCarroceria4: danosCarroceria[3],
     };
   }
 
@@ -281,7 +313,7 @@ export class InsRegistroSalidaService {
       insumo1, insumo2, insumo3, insumo4, insumo5, insumo6, insumo7, insumo8,
       documentacion1, documentacion2, documentacion3, documentacion4,
       documentacion5, documentacion6, documentacion7, documentacion8,
-      dasCarroceria1, dasCarroceria2, dasCarroceria3, dasCarroceria4,
+      danosCarroceria1, danosCarroceria2, danosCarroceria3, danosCarroceria4,
     } = arrays;
     
     return [
@@ -351,30 +383,30 @@ export class InsRegistroSalidaService {
         insumo8?.disponibleSi ? "sí" : insumo8?.disponibleNo ? "no" : "N/A",
         "",
         documentacion1?.nombre,
-        documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A" ,
+        documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A",
         documentacion2?.nombre,
-        documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A" ,
+        documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A",
         documentacion3?.nombre,
-        documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A" ,
+        documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A",
         documentacion4?.nombre,
-        documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A" ,
+        documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A",
         documentacion5?.nombre,
-        documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A" ,
+        documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A",
         documentacion6?.nombre,
-        documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A" ,
+        documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A",
         documentacion7?.nombre,
-        documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A" ,
+        documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A",
         documentacion8?.nombre,
-        documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A" ,
+        documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A",
         "",
-        "Daño 1", dasCarroceria1?.vista, dasCarroceria1?.rayones ? "X" : "no", dasCarroceria1?.golpes ? "/" : "no", dasCarroceria1?.quebrado ? "O" : "no",
-        dasCarroceria1?.faltante ? "*" : "no",
-        "Daño 2", dasCarroceria2?.vista, dasCarroceria2?.rayones ? "X" : "no", dasCarroceria2?.golpes ? "/" : "no", dasCarroceria2?.quebrado ? "0" : "no",
-        dasCarroceria2?.faltante ? "*" : "no",
-        "Daño 3", dasCarroceria3?.vista, dasCarroceria3?.rayones ? "X" : "no", dasCarroceria3?.golpes ? "/" : "no", dasCarroceria3?.quebrado ? "0" : "no",
-        dasCarroceria3?.faltante ? "*" : "no",
-        "Daño 4", dasCarroceria4?.vista, dasCarroceria4?.rayones ? "X" : "no", dasCarroceria4?.golpes ? "/" : "no", dasCarroceria4?.quebrado ? "0" : "no",
-        dasCarroceria4?.faltante ? "*" : "no"
+        "Daño 1", danosCarroceria1?.vista, danosCarroceria1?.rayones ? "X" : "no", danosCarroceria1?.golpes ? "/" : "no", 
+        danosCarroceria1?.quebrado ? "O" : "no", danosCarroceria1?.faltante ? "*" : "no",
+        "Daño 2", danosCarroceria2?.vista, danosCarroceria2?.rayones ? "X" : "no", danosCarroceria2?.golpes ? "/" : "no", 
+        danosCarroceria2?.quebrado ? "0" : "no", danosCarroceria2?.faltante ? "*" : "no",
+        "Daño 3", danosCarroceria3?.vista, danosCarroceria3?.rayones ? "X" : "no", danosCarroceria3?.golpes ? "/" : "no", 
+        danosCarroceria3?.quebrado ? "0" : "no", danosCarroceria3?.faltante ? "*" : "no",
+        "Daño 4", danosCarroceria4?.vista, danosCarroceria4?.rayones ? "X" : "no", danosCarroceria4?.golpes ? "/" : "no", 
+        danosCarroceria4?.quebrado ? "0" : "no", danosCarroceria4?.faltante ? "*" : "no"
       ],
     ];
   }
