@@ -40,28 +40,6 @@ export class PlacasController {
       }
   }
 
-  @Get('get-tipos-vehiculo-y-llantas')
-  async getTiposVehiculoYLlantas() {
-      try {
-          const { tipos, llantas } = await this.placasService.getTiposVehiculoYLlantas();
-          
-          // Convertir a formato { placa: { tipo: string, llantas: number } }
-          const result: Record<string, { tipo: string; llantas: number }> = {};
-          
-          Object.keys(tipos).forEach(placa => {
-              result[placa] = {
-                  tipo: tipos[placa],
-                  llantas: llantas[placa] || 4 // Default a 4 si no hay valor
-              };
-          });
-  
-          return result;
-      } catch (error) {
-          console.error('Error en controller:', error);
-          return {};
-      }
-  }
-
   @Get('get-conductores')
   async getConductores() {
       try {
@@ -70,6 +48,29 @@ export class PlacasController {
       } catch (error) {
           console.error('Error en controller:', error);
           return [];
+      }
+  }
+
+  @Get('get-cantidad-llantas')
+  async getCantidadLlantas() {
+      try {
+          const data = await this.placasService.getCantidadLlantas();
+          return data;
+      } catch (error) {
+          console.error('Error en controller al obtener cantidad de llantas:', error);
+          return {};
+      }
+  }
+
+  // (Opcional) Endpoint para diagnóstico
+  @Get('test-connection')
+  async testConnection() {
+      try {
+          const success = await this.placasService.testSheetConnection();
+          return { success, message: 'Conexión con Google Sheets verificada' };
+      } catch (error) {
+          console.error('Error en test de conexión:', error);
+          return { success: false, message: 'Error al conectar con Google Sheets' };
       }
   }
 }
