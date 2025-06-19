@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Query } from '@nestjs/common';
+import { Controller, Get, Header } from '@nestjs/common';
 import { PlacasService } from './placas.service';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -30,52 +30,24 @@ export class PlacasController {
   }
 
   @Get('get-tipos-vehiculo')
-  async getTiposVehiculo(@Query() params: any) {
+  async getTiposVehiculo() {
       try {
-          // Obtener tanto los tipos de vehículo como la cantidad de llantas
-          const { tipos, llantas } = await this.placasService.getTiposVehiculo();
-          
-          return {
-              success: true,
-              tiposVehiculo: tipos,
-              cantidadesLlantas: llantas
-          };
+          const data = await this.placasService.getTiposVehiculo();
+          return data;
       } catch (error) {
           console.error('Error en controller:', error);
-          return {
-              success: false,
-              tiposVehiculo: {},
-              cantidadesLlantas: {},
-              message: 'Error al obtener tipos de vehículo y cantidades de llantas'
-          };
+          return {};
       }
   }
 
-  @Get('get-cantidad-llantas')
-  async getCantidadLlantas(@Query('placa') placa: string) {
+  @Get('get-tipos-vehiculo-y-llantas')
+  async getTiposVehiculoYLlantas() {
       try {
-          if (!placa) {
-              return {
-                  success: false,
-                  message: 'El parámetro "placa" es requerido',
-                  cantidad: 4 // Valor por defecto
-              };
-          }
-
-          const cantidad = await this.placasService.getCantidadLlantas(placa);
-          return {
-              success: true,
-              placa: placa,
-              cantidadLlantas: cantidad
-          };
+          const data = await this.placasService.getTiposVehiculoYLlantas();
+          return data;
       } catch (error) {
           console.error('Error en controller:', error);
-          return {
-              success: false,
-              placa: placa,
-              cantidadLlantas: 4, // Valor por defecto en caso de error
-              message: 'Error al obtener cantidad de llantas'
-          };
+          return {tipos: {}, llantas: {}};
       }
   }
 
@@ -83,17 +55,10 @@ export class PlacasController {
   async getConductores() {
       try {
           const data = await this.placasService.getConductoresFromSheet();
-          return {
-              success: true,
-              conductores: data
-          };
+          return data;
       } catch (error) {
           console.error('Error en controller:', error);
-          return {
-              success: false,
-              conductores: [],
-              message: 'Error al obtener lista de conductores'
-          };
+          return [];
       }
   }
 }
