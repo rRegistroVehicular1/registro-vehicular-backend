@@ -43,11 +43,22 @@ export class PlacasController {
   @Get('get-tipos-vehiculo-y-llantas')
   async getTiposVehiculoYLlantas() {
       try {
-          const data = await this.placasService.getTiposVehiculoYLlantas();
-          return data;
+          const { tipos, llantas } = await this.placasService.getTiposVehiculoYLlantas();
+          
+          // Convertir a formato { placa: { tipo: string, llantas: number } }
+          const result: Record<string, { tipo: string; llantas: number }> = {};
+          
+          Object.keys(tipos).forEach(placa => {
+              result[placa] = {
+                  tipo: tipos[placa],
+                  llantas: llantas[placa] || 4 // Default a 4 si no hay valor
+              };
+          });
+  
+          return result;
       } catch (error) {
           console.error('Error en controller:', error);
-          return {tipos: {}, llantas: {}};
+          return {};
       }
   }
 
