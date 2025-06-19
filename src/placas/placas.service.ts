@@ -30,23 +30,24 @@ export class PlacasService {
         return [];
       }
 
+      // Procesamiento robusto
       const placas = data.values
-        .flat()
-        .map(item => item ? item.toString().trim() : '')
-        .filter(item => item.length > 0);
+        .flat() // Convierte matriz en array unidimensional
+        .map(item => item ? item.toString().trim() : '') // Convierte a string y limpia
+        .filter(item => item.length > 0); // Filtra strings vacíos
   
       console.log('Placas obtenidas:', placas);
       return placas;
       
     } catch (error) {
       console.error('Error al obtener placas:', error);
-      return [];
+      return []; // Fallback seguro
     }
   }
 
   async getVehiculosFromSheet(): Promise<Record<string, string>> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!A2:C';
+    const range = 'Lista de Placas!A2:C'; // Col A: Número de vehículo, Col C: Placa
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -80,7 +81,7 @@ export class PlacasService {
 
   async getTiposVehiculo(): Promise<Record<string, string>> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:D';
+    const range = 'Lista de Placas!C2:D'; // Col C: Placa, Col D: Tipo de Vehículo
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -112,9 +113,9 @@ export class PlacasService {
     }
   }
 
-  async getTiposVehiculoYLlantas(): Promise<{tipos: Record<string, string>, llantas: Record<string, number>}> {
+  async getCantidadLlantas(): Promise<Record<string, number>> {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
-    const range = 'Lista de Placas!C2:E';
+    const range = 'Lista de Placas!C2:E'; // Col C: Placa, Col E: Cantidad de Llantas
 
     try {
       const { data } = await this.sheets.spreadsheets.values.get({
@@ -124,33 +125,25 @@ export class PlacasService {
 
       if (!data.values) {
         console.log('No se encontraron datos en el rango especificado');
-        return {tipos: {}, llantas: {}};
+        return {};
       }
 
-      const tiposMap: Record<string, string> = {};
       const llantasMap: Record<string, number> = {};
       
       data.values.forEach(row => {
-        if (row.length >= 3 && row[0]) {
+        if (row.length >= 3 && row[0] && row[2]) {
           const placa = row[0].toString().trim().toUpperCase();
-          
-          if (row[1]) tiposMap[placa] = row[1].toString().trim().toLowerCase();
-          
-          if (row[2]) {
-            const cantidad = parseInt(row[2].toString().trim());
-            llantasMap[placa] = cantidad >= 4 ? cantidad : 4; // Default a 4 si el valor es inválido
-          } else {
-            llantasMap[placa] = 4; // Default a 4 si no hay valor
-          }
+          const cantidad = parseInt(row[2].toString().trim()) || 4; // Default a 4 si no hay valor
+          llantasMap[placa] = cantidad;
         }
       });
 
-      console.log('Mapas obtenidos:', {tipos: tiposMap, llantas: llantasMap});
-      return {tipos: tiposMap, llantas: llantasMap};
+      console.log('Mapa de placas a cantidad de llantas:', llantasMap);
+      return llantasMap;
       
     } catch (error) {
-      console.error('Error al obtener tipos y llantas:', error);
-      return {tipos: {}, llantas: {}};
+      console.error('Error al obtener cantidad de llantas:', error);
+      return {};
     }
   }
 
@@ -169,6 +162,7 @@ export class PlacasService {
         return [];
       }
 
+      // Procesamiento para obtener nombres únicos y ordenados
       const conductores = data.values
         .flat()
         .map(item => item ? item.toString().trim() : '')
@@ -184,6 +178,7 @@ export class PlacasService {
     }
   }
 
+  // (Opcional) Método para diagnóstico
   async testSheetConnection(): Promise<boolean> {
     try {
       const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
