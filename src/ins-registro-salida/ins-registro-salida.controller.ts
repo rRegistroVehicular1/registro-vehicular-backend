@@ -28,15 +28,12 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria,
-      cantidadLlantas // Nuevo campo recibido
+      danosCarroceria
     } = body;
 
     const estadoSalida = "salida";
     
-    console.log("Datos recibidos - Llantas:", body.llantas);
-    console.log("Cantidad de llantas recibida:", cantidadLlantas);
-
+    // Procesamiento seguro de llantas
     let llantasArray: any[] = [];
     try {
       llantasArray = typeof body.llantas === 'string' 
@@ -46,11 +43,6 @@ export class InsRegistroSalidaController {
       if (!Array.isArray(llantasArray)) {
         throw new Error("Llantas no es un array válido");
       }
-
-      // Validar que la cantidad de llantas coincida con lo esperado
-      if (cantidadLlantas && llantasArray.length !== cantidadLlantas) {
-        throw new Error(`La cantidad de llantas (${llantasArray.length}) no coincide con la esperada (${cantidadLlantas})`);
-      }
     } catch (error) {
       console.error("Error al parsear llantas:", error);
       llantasArray = []; // Fallback seguro
@@ -58,7 +50,19 @@ export class InsRegistroSalidaController {
 
     console.log("Llantas procesadas (parsed):", llantasArray);
 
-    const todasLlantas = [...llantasArray];
+    // Obtener cantidad de llantas esperadas para esta placa
+    let cantidadLlantasEsperadas = 4; // Valor por defecto
+    try {
+      const response = await this.InsRegistroSalidaService.getCantidadLlantas(placa);
+      cantidadLlantasEsperadas = response?.cantidad || 4;
+    } catch (error) {
+      console.error("Error al obtener cantidad de llantas:", error);
+    }
+
+    // Validar que coincida la cantidad de llantas
+    if (llantasArray.length !== cantidadLlantasEsperadas) {
+      throw new Error(`La placa ${placa} requiere ${cantidadLlantasEsperadas} llantas, pero se enviaron ${llantasArray.length}`);
+    }
 
     const result = await this.InsRegistroSalidaService.handleData(
       placa,
@@ -67,7 +71,7 @@ export class InsRegistroSalidaController {
       tipoVehiculo,
       odometroSalida,
       estadoSalida, 
-      todasLlantas,
+      llantasArray,
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
@@ -77,7 +81,7 @@ export class InsRegistroSalidaController {
       insumos,
       documentacion,
       danosCarroceria,
-      cantidadLlantas // Pasamos la cantidad de llantas al servicio
+      cantidadLlantasEsperadas // Pasamos la cantidad esperada al servicio
     );
 
     return result;
