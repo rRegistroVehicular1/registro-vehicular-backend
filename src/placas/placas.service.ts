@@ -2,16 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { google } from 'googleapis';
 import * as dotenv from 'dotenv';
 import { AppService } from 'src/app.service';
-import { PlacasService } from '../placas/placas.service';
-
 dotenv.config();
 
 @Injectable()
-export class InsRegistroSalidaService {
+export class PlacasService {
   private sheets: any;
   private auth: any;
 
-  constructor(private readonly appService: AppService, private readonly salidasService: SalidasService, private readonly placasService: PlacasService) {
+  constructor(private readonly appService: AppService) {
     this.auth = this.appService['auth']; 
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
@@ -35,10 +33,10 @@ export class InsRegistroSalidaService {
         .flat()
         .map(item => item ? item.toString().trim() : '')
         .filter(item => item.length > 0);
-  
+
       console.log('Placas obtenidas:', placas);
       return placas;
-      
+
     } catch (error) {
       console.error('Error al obtener placas:', error);
       return [];
@@ -61,7 +59,7 @@ export class InsRegistroSalidaService {
       }
 
       const vehiculosMap: Record<string, string> = {};
-      
+
       data.values.forEach(row => {
         if (row.length >= 2 && row[0] && row[2]) {
           const numeroVehiculo = row[0].toString().trim();
@@ -72,7 +70,7 @@ export class InsRegistroSalidaService {
 
       console.log('Mapa de placas a vehículos:', vehiculosMap);
       return vehiculosMap;
-      
+
     } catch (error) {
       console.error('Error al obtener vehículos:', error);
       return {};
@@ -95,7 +93,7 @@ export class InsRegistroSalidaService {
       }
 
       const tiposMap: Record<string, string> = {};
-      
+
       data.values.forEach(row => {
         if (row.length >= 2 && row[0] && row[1]) {
           const placa = row[0].toString().trim().toUpperCase();
@@ -106,7 +104,7 @@ export class InsRegistroSalidaService {
 
       console.log('Mapa de placas a tipos de vehículo:', tiposMap);
       return tiposMap;
-      
+
     } catch (error) {
       console.error('Error al obtener tipos de vehículo:', error);
       return {};
@@ -129,7 +127,7 @@ export class InsRegistroSalidaService {
       }
 
       const llantasMap: Record<string, number> = {};
-      
+
       data.values.forEach(row => {
         if (row.length >= 3 && row[0] && row[2]) {
           const placa = row[0].toString().trim().toUpperCase();
@@ -140,7 +138,7 @@ export class InsRegistroSalidaService {
 
       console.log('Mapa de placas a cantidad de llantas:', llantasMap);
       return llantasMap;
-      
+
     } catch (error) {
       console.error('Error al obtener llantas por placa:', error);
       return {};
