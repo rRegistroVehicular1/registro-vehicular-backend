@@ -51,26 +51,14 @@ export class PlacasController {
       }
   }
 
-  @Get('get-cantidad-llantas')
-  async getCantidadLlantas() {
-      try {
-          const data = await this.placasService.getCantidadLlantas();
-          return data;
-      } catch (error) {
-          console.error('Error en controller al obtener cantidad de llantas:', error);
-          return {};
-      }
-  }
-
-  // (Opcional) Endpoint para diagnóstico
-  @Get('test-connection')
-  async testConnection() {
-      try {
-          const success = await this.placasService.testSheetConnection();
-          return { success, message: 'Conexión con Google Sheets verificada' };
-      } catch (error) {
-          console.error('Error en test de conexión:', error);
-          return { success: false, message: 'Error al conectar con Google Sheets' };
-      }
+  @Get('get-llantas-por-placa')
+  async getLlantasPorPlaca() {
+    try {
+      const data = await this.placasService.getLlantasPorPlaca();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener llantas por placa:', error);
+      return {};
+    }
   }
 }
