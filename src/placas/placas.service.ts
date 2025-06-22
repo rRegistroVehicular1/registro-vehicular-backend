@@ -2,15 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { google } from 'googleapis';
 import * as dotenv from 'dotenv';
 import { AppService } from 'src/app.service';
+import { PlacasService } from '../placas/placas.service';
 
 dotenv.config();
 
 @Injectable()
-export class PlacasService {
+export class InsRegistroSalidaService {
   private sheets: any;
   private auth: any;
 
-  constructor(private readonly appService: AppService) {
+  constructor(private readonly appService: AppService, private readonly salidasService: SalidasService, private readonly placasService: PlacasService) {
     this.auth = this.appService['auth']; 
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
