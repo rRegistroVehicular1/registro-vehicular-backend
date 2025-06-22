@@ -7,5 +7,6 @@ import { AppModule } from 'src/app.module';
   imports: [forwardRef(() => AppModule)],
   controllers: [PlacasController],
   providers: [PlacasService],
+  exports: [PlacasService]
 })
 export class PlacasModule { }
