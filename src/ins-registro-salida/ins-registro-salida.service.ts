@@ -77,13 +77,19 @@ export class InsRegistroSalidaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     
     try {
-      // Obtener cantidad de llantas para esta placa
-      const placasService = this.appService['placasService'];
+      // 1. Primero obtener la cantidad de llantas para esta placa
+      //const placasService = this.appService['placasService'];
       const llantasPorPlaca = await placasService.getLlantasPorPlaca();
       const cantidadLlantas = llantasPorPlaca[placa] || 4;
 
-      // Validar llantas recibidas
-      this.validateTires(cantidadLlantas, llantas);
+      // 2. Validar que las llantas enviadas coincidan con la cantidad esperada
+      const idsLlantasEnviadas = llantas.map(llanta => llanta.id);
+      const idsEsperados = this.getIdsLlantasEsperados(cantidadLlantas);
+      
+      const llantasInvalidas = idsLlantasEnviadas.filter(id => !idsEsperados.includes(id));
+      if (llantasInvalidas.length > 0) {
+        throw new Error(`La placa ${placa} requiere ${cantidadLlantas} llantas (IDs esperados: ${idsEsperados.join(', ')})`);
+      }
       
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
@@ -169,6 +175,16 @@ export class InsRegistroSalidaService {
     } catch (error) {
       console.error('Error al procesar datos:', error.response?.data || error.message || error);
       throw new Error(`Error al procesar datos: ${error.message}`);
+    }
+  }
+
+  // Método auxiliar para obtener IDs esperados
+  private getIdsLlantasEsperados(cantidad: number): number[] {
+    switch(cantidad) {
+      case 4: return [1, 2, 5, 7];
+      case 6: return [1, 2, 5, 6, 7, 8];
+      case 10: return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      default: return [1, 2, 5, 7];
     }
   }
 
