@@ -43,26 +43,19 @@ export class InsRegistroSalidaController {
       if (!Array.isArray(llantasArray)) {
         throw new Error("Llantas no es un array válido");
       }
+
+      // Validar que las llantas tengan ID y sean válidas
+      llantasArray.forEach(llanta => {
+        if (!llanta.id || typeof llanta.id !== 'number') {
+          throw new Error(`Llanta inválida: ${JSON.stringify(llanta)}`);
+        }
+      });
     } catch (error) {
-      console.error("Error al parsear llantas:", error);
-      llantasArray = []; // Fallback seguro
+      console.error("Error al procesar llantas:", error);
+      throw new Error(`Error en formato de llantas: ${error.message}`);
     }
 
-    console.log("Llantas procesadas (parsed):", llantasArray);
-
-    // Obtener cantidad de llantas esperadas para esta placa
-    let cantidadLlantasEsperadas = 4; // Valor por defecto
-    try {
-      const response = await this.InsRegistroSalidaService.getCantidadLlantas(placa);
-      cantidadLlantasEsperadas = response?.cantidad || 4;
-    } catch (error) {
-      console.error("Error al obtener cantidad de llantas:", error);
-    }
-
-    // Validar que coincida la cantidad de llantas
-    if (llantasArray.length !== cantidadLlantasEsperadas) {
-      throw new Error(`La placa ${placa} requiere ${cantidadLlantasEsperadas} llantas, pero se enviaron ${llantasArray.length}`);
-    }
+    console.log("Llantas procesadas:", llantasArray);
 
     const result = await this.InsRegistroSalidaService.handleData(
       placa,
@@ -71,7 +64,7 @@ export class InsRegistroSalidaController {
       tipoVehiculo,
       odometroSalida,
       estadoSalida, 
-      llantasArray,
+      llantasArray, // Enviamos el array procesado
       observacionGeneralLlantas,
       fluidos,
       observacionGeneralFluido,
@@ -80,8 +73,7 @@ export class InsRegistroSalidaController {
       luces,
       insumos,
       documentacion,
-      danosCarroceria,
-      cantidadLlantasEsperadas // Pasamos la cantidad esperada al servicio
+      danosCarroceria
     );
 
     return result;
