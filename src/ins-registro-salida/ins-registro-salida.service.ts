@@ -18,110 +18,40 @@ export class InsRegistroSalidaService {
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
   }
 
-  private validateTires(cantidadEsperada: number, llantas: any[]): void {
-    // Validar cantidad de llantas
-    if (llantas.length !== cantidadEsperada) {
-      throw new Error(`Se esperaban ${cantidadEsperada} llantas pero se recibieron ${llantas.length}`);
-    }
+  private validateTires(cantidadLlantas: number, llantas: any[]): void {
+    const configuracionesLlantas = {
+      4: [1, 2, 5, 7],
+      6: [1, 2, 5, 6, 7, 8],
+      10: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    };
 
-    // Definir IDs permitidos según cantidad
-    let idsPermitidos: number[];
-    switch (cantidadEsperada) {
-      case 4:
-        idsPermitidos = [1, 2, 5, 7];
-        break;
-      case 6:
-        idsPermitidos = [1, 2, 5, 6, 7, 8];
-        break;
-      case 10:
-        idsPermitidos = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        break;
-      default:
-        throw new Error(`Cantidad de llantas no soportada: ${cantidadEsperada}`);
-    }
-
-    // Validar IDs individuales
+    const idsPermitidos = configuracionesLlantas[cantidadLlantas] || [1, 2, 5, 7];
     const idsEnviados = llantas.map(llanta => llanta.id);
-    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
-
-    if (idsInvalidos.length > 0) {
-      throw new Error(`Configuración de ${cantidadEsperada} llantas no permite IDs: ${idsInvalidos.join(', ')}`);
-    }
-  }
-
-  private normalizeTiresData(llantas: any[], cantidadEsperada: number): any[] {
-    console.log("Llantas recibidas:", llantas);
     
-    // Crear array con todas las posiciones posibles (1-10)
-    const normalized = Array(10).fill(null).map((_, index) => {
-      const id = index + 1;
-      const llantaExistente = llantas.find(l => l.id === id);
-      return llantaExistente || {
-        id,
-        nombre: `${id} - ${this.getPosicionNombre(id)}`,
-        posicion: this.getPosicion(id),
-        lado: this.getLado(id),
-        fp: false,
-        pe: false,
-        pa: false,
-        desgaste: false
-      };
-    });
-
-    // Filtrar según cantidad esperada
-    let llantasFiltradas: any[];
-    switch (cantidadEsperada) {
-      case 4:
-        llantasFiltradas = normalized.filter(llanta => [1, 2, 5, 7].includes(llanta.id));
-        break;
-      case 6:
-        llantasFiltradas = normalized.filter(llanta => [1, 2, 5, 6, 7, 8].includes(llanta.id));
-        break;
-      case 10:
-        llantasFiltradas = normalized;
-        break;
-      default:
-        llantasFiltradas = normalized.filter(llanta => [1, 2, 5, 7].includes(llanta.id));
+    const idsInvalidos = idsEnviados.filter(id => !idsPermitidos.includes(id));
+    
+    if (idsInvalidos.length > 0) {
+      throw new Error(`Configuración de ${cantidadLlantas} llantas no permite IDs: ${idsInvalidos.join(', ')}`);
     }
-
-    console.log("Llantas normalizadas:", llantasFiltradas);
-    return llantasFiltradas;
   }
 
-  private getPosicion(id: number): string {
-    const posiciones = {
-      1: 'delantera',
-      2: 'delantera',
-      3: 'extra-delantera',
-      4: 'extra-delantera',
-      5: 'trasera',
-      6: 'extra-trasera',
-      7: 'trasera',
-      8: 'extra-trasera',
-      9: 'central',
-      10: 'central'
+  private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
+    const configuracionesPosiciones = {
+      4: { 1: 0, 2: 1, 5: 2, 7: 3 },
+      6: { 1: 0, 2: 1, 5: 2, 6: 3, 7: 4, 8: 5 },
+      10: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9 }
     };
-    return posiciones[id] || 'desconocida';
-  }
 
-  private getLado(id: number): string {
-    return id % 2 === 1 ? 'izquierda' : 'derecha';
-  }
-
-  private getPosicionNombre(id: number): string {
-    const posiciones = {
-      1: 'Delantera Izquierda',
-      2: 'Delantera Derecha',
-      3: 'Extra Delantera Izquierda',
-      4: 'Extra Delantera Derecha',
-      5: 'Trasera Derecha',
-      6: 'Extra Trasera Derecha',
-      7: 'Trasera Izquierda',
-      8: 'Extra Trasera Izquierda',
-      9: 'Central Izquierda',
-      10: 'Central Derecha'
-    };
-    return posiciones[id] || 'Posición Desconocida';
+    const posiciones = configuracionesPosiciones[cantidadLlantas] || configuracionesPosiciones[4];
+    const normalized = Array(cantidadLlantas).fill(null);
+    
+    llantas.forEach(llanta => {
+      if (llanta?.id !== undefined && posiciones[llanta.id] !== undefined) {
+        normalized[posiciones[llanta.id]] = llanta;
+      }
+    });
+    
+    return normalized;
   }
 
   async handleData(
@@ -141,13 +71,16 @@ export class InsRegistroSalidaService {
     insumos: any[],
     documentacion: any[],
     danosCarroceria: any[],
-    cantidadLlantas: number // Nuevo parámetro recibido del frontend
   ) {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
-    console.log(spreadsheetId);
-
+    
     try {
-      // 1. Validar llantas según cantidad esperada
+      // Obtener cantidad de llantas para esta placa
+      const placasService = this.appService['placasService'];
+      const llantasPorPlaca = await placasService.getLlantasPorPlaca();
+      const cantidadLlantas = llantasPorPlaca[placa] || 4;
+
+      // Validar llantas recibidas
       this.validateTires(cantidadLlantas, llantas);
       
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
@@ -169,7 +102,7 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      // Normalizar datos
+      // Normalizar datos de llantas según cantidad
       llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
@@ -180,6 +113,7 @@ export class InsRegistroSalidaService {
 
       const arrays = this.initializeArrays({
         llantas,
+        cantidadLlantas,
         fluidos,
         parametrosVisuales,
         luces,
@@ -200,7 +134,6 @@ export class InsRegistroSalidaService {
         fluidos,
         observacionGeneralFluido,
         observacionGeneralVisuales,
-        cantidadLlantas, // Pasamos la cantidad de llantas
         ...arrays,
       });
 
@@ -230,16 +163,9 @@ export class InsRegistroSalidaService {
       await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
 
       console.log('Datos enviados correctamente a Google Sheets.');
-      return { 
-        message: 'Datos procesados y almacenados correctamente en Google Sheets',
-        cantidadLlantas: cantidadLlantas // Incluimos la cantidad en la respuesta
-      };
+      return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
     } catch (error) {
-      console.error('Error al procesar datos:', {
-        message: error.message,
-        stack: error.stack,
-        response: error.response?.data
-      });
+      console.error('Error al procesar datos:', error.response?.data || error.message || error);
       throw new Error(`Error al procesar datos: ${error.message}`);
     }
   }
@@ -258,6 +184,7 @@ export class InsRegistroSalidaService {
 
   private initializeArrays({
     llantas,
+    cantidadLlantas,
     fluidos,
     parametrosVisuales,
     luces,
@@ -265,17 +192,14 @@ export class InsRegistroSalidaService {
     documentacion,
     danosCarroceria,
   }: any) {
+    // Inicializar todas las llantas posibles
+    const llantasMap = {};
+    for (let i = 1; i <= 10; i++) {
+      llantasMap[`llanta${i}`] = llantas[i - 1] || null;
+    }
+
     return {
-      llanta1: llantas[0],
-      llanta2: llantas[1],
-      llanta3: llantas[2],
-      llanta4: llantas[3],
-      llanta5: llantas[4],
-      llanta6: llantas[5],
-      llanta7: llantas[6],
-      llanta8: llantas[7],
-      llanta9: llantas[8],
-      llanta10: llantas[9],
+      ...llantasMap,
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
@@ -326,7 +250,6 @@ export class InsRegistroSalidaService {
     observacionGeneralLlantas,
     observacionGeneralFluido,
     observacionGeneralVisuales,
-    cantidadLlantas,
     ...arrays
   }: any) {
     const {
@@ -341,113 +264,107 @@ export class InsRegistroSalidaService {
       danosCarroceria1, danosCarroceria2, danosCarroceria3, danosCarroceria4,
     } = arrays;
     
-    // Base del array de valores
-    const baseValues = [
-      fechaHoraActual,
-      placa,
-      conductor,
-      sucursal,
-      tipoVehiculo,
-      odometroSalida,
-      estadoSalida,
-      cantidadLlantas, // Nueva columna para cantidad de llantas
+    const llantasValues = [];
+    for (let i = 1; i <= 10; i++) {
+      const llanta = arrays[`llanta${i}`];
+      if (llanta) {
+        llantasValues.push(
+          `llanta ${i}`,
+          llanta?.fp ? "√" : " ",
+          llanta?.pe ? "√" : "",
+          llanta?.pa ? "√" : "",
+          llanta?.desgaste ? "x" : ""
+        );
+      }
+    }
+
+    return [
+      [
+        fechaHoraActual,
+        placa,
+        conductor,
+        sucursal,
+        tipoVehiculo,
+        odometroSalida,
+        estadoSalida,
+        ...llantasValues,
+        observacionGeneralLlantas,
+        "Nivel 1", fluido1?.nombre, fluido1?.requiere ? "√" : "", fluido1?.lleno ? "√" : "",
+        "Nivel 2", fluido2?.nombre, fluido2?.requiere ? "√" : "", fluido2?.lleno ? "√" : "",
+        "Nivel 3", fluido3?.nombre, fluido3?.requiere ? "√" : "", fluido3?.lleno ? "√" : "",
+        "Nivel 4", fluido4?.nombre, fluido4?.requiere ? "√" : "", fluido4?.lleno ? "√" : "",
+        observacionGeneralFluido,
+        "",
+        parametros1?.nombre, parametros1?.si ? "sí" : "no",
+        parametros2?.nombre, parametros2?.si ? "sí" : "no",
+        parametros3?.nombre, parametros3?.si ? "sí" : "no",
+        parametros4?.nombre, parametros4?.si ? "sí" : "no",
+        observacionGeneralVisuales,
+        "",
+        luces1?.nombre, 
+        luces1?.funcionaSi ? "sí" : luces1?.funcionaNo ? "no" : "N/A",
+        luces2?.nombre, 
+        luces2?.funcionaSi ? "sí" : luces2?.funcionaNo ? "no" : "N/A",
+        luces3?.nombre, 
+        luces3?.funcionaSi ? "sí" : luces3?.funcionaNo ? "no" : "N/A",
+        luces4?.nombre, 
+        luces4?.funcionaSi ? "sí" : luces4?.funcionaNo ? "no" : "N/A",
+        luces5?.nombre, 
+        luces5?.funcionaSi ? "sí" : luces5?.funcionaNo ? "no" : "N/A",
+        luces6?.nombre, 
+        luces6?.funcionaSi ? "sí" : luces6?.funcionaNo ? "no" : "N/A",
+        luces7?.nombre, 
+        luces7?.funcionaSi ? "sí" : luces7?.funcionaNo ? "no" : "N/A",
+        luces8?.nombre, 
+        luces8?.funcionaSi ? "sí" : luces8?.funcionaNo ? "no" : "N/A",
+        "",
+        insumo1?.nombre, 
+        insumo1?.disponibleSi ? "sí" : insumo1?.disponibleNo ? "no" : "N/A",
+        insumo2?.nombre, 
+        insumo2?.disponibleSi ? "sí" : insumo2?.disponibleNo ? "no" : "N/A",
+        insumo3?.nombre, 
+        insumo3?.disponibleSi ? "sí" : insumo3?.disponibleNo ? "no" : "N/A",
+        insumo4?.nombre, 
+        insumo4?.disponibleSi ? "sí" : insumo4?.disponibleNo ? "no" : "N/A",
+        insumo5?.nombre, 
+        insumo5?.disponibleSi ? "sí" : insumo5?.disponibleNo ? "no" : "N/A",
+        insumo6?.nombre, 
+        insumo6?.disponibleSi ? "sí" : insumo6?.disponibleNo ? "no" : "N/A",
+        insumo7?.nombre, 
+        insumo7?.disponibleSi ? "sí" : insumo7?.disponibleNo ? "no" : "N/A",
+        insumo8?.nombre, 
+        insumo8?.disponibleSi ? "sí" : insumo8?.disponibleNo ? "no" : "N/A",
+        "",
+        documentacion1?.nombre,
+        documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A",
+        documentacion2?.nombre,
+        documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A",
+        documentacion3?.nombre,
+        documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A",
+        documentacion4?.nombre,
+        documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A",
+        documentacion5?.nombre,
+        documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A",
+        documentacion6?.nombre,
+        documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A",
+        documentacion7?.nombre,
+        documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A",
+        documentacion8?.nombre,
+        documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A",
+        "",
+        "Daño 1", danosCarroceria1?.vista, danosCarroceria1?.rayones ? "X" : "no", 
+        danosCarroceria1?.golpes ? "/" : "no", danosCarroceria1?.quebrado ? "O" : "no",
+        danosCarroceria1?.faltante ? "*" : "no",
+        "Daño 2", danosCarroceria2?.vista, danosCarroceria2?.rayones ? "X" : "no", 
+        danosCarroceria2?.golpes ? "/" : "no", danosCarroceria2?.quebrado ? "0" : "no",
+        danosCarroceria2?.faltante ? "*" : "no",
+        "Daño 3", danosCarroceria3?.vista, danosCarroceria3?.rayones ? "X" : "no", 
+        danosCarroceria3?.golpes ? "/" : "no", danosCarroceria3?.quebrado ? "0" : "no",
+        danosCarroceria3?.faltante ? "*" : "no",
+        "Daño 4", danosCarroceria4?.vista, danosCarroceria4?.rayones ? "X" : "no", 
+        danosCarroceria4?.golpes ? "/" : "no", danosCarroceria4?.quebrado ? "0" : "no",
+        danosCarroceria4?.faltante ? "*" : "no"
+      ],
     ];
-
-    // Función para agregar datos de llantas según cantidad
-    const addTiresData = (values: any[]) => {
-      // Siempre agregamos las 10 posiciones, pero el frontend solo mostrará las necesarias
-      values.push(
-        "llanta 1", llanta1?.fp ? "√" : " ", llanta1?.pe ? "√" : "", llanta1?.pa ? "√" : "", llanta1?.desgaste ? "x" : "",
-        "llanta 2", llanta2?.fp ? "√" : "", llanta2?.pe ? "√" : "", llanta2?.pa ? "√" : "", llanta2?.desgaste ? "x" : "",
-        "llanta 3", llanta3?.fp ? "√" : "", llanta3?.pe ? "√" : "", llanta3?.pa ? "√" : "", llanta3?.desgaste ? "x" : "",
-        "llanta 4", llanta4?.fp ? "√" : "", llanta4?.pe ? "√" : "", llanta4?.pa ? "√" : "", llanta4?.desgaste ? "x" : "",
-        "llanta 5", llanta5?.fp ? "√" : "", llanta5?.pe ? "√" : "", llanta5?.pa ? "√" : "", llanta5?.desgaste ? "x" : "",
-        "llanta 6", llanta6?.fp ? "√" : "", llanta6?.pe ? "√" : "", llanta6?.pa ? "√" : "", llanta6?.desgaste ? "x" : "",
-        "llanta 7", llanta7?.fp ? "√" : "", llanta7?.pe ? "√" : "", llanta7?.pa ? "√" : "", llanta7?.desgaste ? "x" : "",
-        "llanta 8", llanta8?.fp ? "√" : "", llanta8?.pe ? "√" : "", llanta8?.pa ? "√" : "", llanta8?.desgaste ? "x" : "",
-        "llanta 9", llanta9?.fp ? "√" : "", llanta9?.pe ? "√" : "", llanta9?.pa ? "√" : "", llanta9?.desgaste ? "x" : "",
-        "llanta 10", llanta10?.fp ? "√" : "", llanta10?.pe ? "√" : "", llanta10?.pa ? "√" : "", llanta10?.desgaste ? "x" : "",
-        observacionGeneralLlantas
-      );
-      return values;
-    };
-
-    // Resto de los valores (fluidos, parámetros visuales, etc.)
-    const restOfValues = [
-      "Nivel 1", fluido1?.nombre, fluido1?.requiere ? "√" : "", fluido1?.lleno ? "√" : "",
-      "Nivel 2", fluido2?.nombre, fluido2?.requiere ? "√" : "", fluido2?.lleno ? "√" : "",
-      "Nivel 3", fluido3?.nombre, fluido3?.requiere ? "√" : "", fluido3?.lleno ? "√" : "",
-      "Nivel 4", fluido4?.nombre, fluido4?.requiere ? "√" : "", fluido4?.lleno ? "√" : "",
-      observacionGeneralFluido,
-      "",
-      parametros1?.nombre, parametros1?.si ? "sí" : "no",
-      parametros2?.nombre, parametros2?.si ? "sí" : "no",
-      parametros3?.nombre, parametros3?.si ? "sí" : "no",
-      parametros4?.nombre, parametros4?.si ? "sí" : "no",
-      observacionGeneralVisuales,
-      "",
-      luces1?.nombre, 
-      luces1?.funcionaSi ? "sí" : luces1?.funcionaNo ? "no" : "N/A",
-      luces2?.nombre, 
-      luces2?.funcionaSi ? "sí" : luces2?.funcionaNo ? "no" : "N/A",
-      luces3?.nombre, 
-      luces3?.funcionaSi ? "sí" : luces3?.funcionaNo ? "no" : "N/A",
-      luces4?.nombre, 
-      luces4?.funcionaSi ? "sí" : luces4?.funcionaNo ? "no" : "N/A",
-      luces5?.nombre, 
-      luces5?.funcionaSi ? "sí" : luces5?.funcionaNo ? "no" : "N/A",
-      luces6?.nombre, 
-      luces6?.funcionaSi ? "sí" : luces6?.funcionaNo ? "no" : "N/A",
-      luces7?.nombre, 
-      luces7?.funcionaSi ? "sí" : luces7?.funcionaNo ? "no" : "N/A",
-      luces8?.nombre, 
-      luces8?.funcionaSi ? "sí" : luces8?.funcionaNo ? "no" : "N/A",
-      "",
-      insumo1?.nombre, 
-      insumo1?.disponibleSi ? "sí" : insumo1?.disponibleNo ? "no" : "N/A",
-      insumo2?.nombre, 
-      insumo2?.disponibleSi ? "sí" : insumo2?.disponibleNo ? "no" : "N/A",
-      insumo3?.nombre, 
-      insumo3?.disponibleSi ? "sí" : insumo3?.disponibleNo ? "no" : "N/A",
-      insumo4?.nombre, 
-      insumo4?.disponibleSi ? "sí" : insumo4?.disponibleNo ? "no" : "N/A",
-      insumo5?.nombre, 
-      insumo5?.disponibleSi ? "sí" : insumo5?.disponibleNo ? "no" : "N/A",
-      insumo6?.nombre, 
-      insumo6?.disponibleSi ? "sí" : insumo6?.disponibleNo ? "no" : "N/A",
-      insumo7?.nombre, 
-      insumo7?.disponibleSi ? "sí" : insumo7?.disponibleNo ? "no" : "N/A",
-      insumo8?.nombre, 
-      insumo8?.disponibleSi ? "sí" : insumo8?.disponibleNo ? "no" : "N/A",
-      "",
-      documentacion1?.nombre,
-      documentacion1?.disponibleSi ? "sí" : documentacion1?.disponibleNo ? "no" : "N/A",
-      documentacion2?.nombre,
-      documentacion2?.disponibleSi ? "sí" : documentacion2?.disponibleNo ? "no" : "N/A",
-      documentacion3?.nombre,
-      documentacion3?.disponibleSi ? "sí" : documentacion3?.disponibleNo ? "no" : "N/A",
-      documentacion4?.nombre,
-      documentacion4?.disponibleSi ? "sí" : documentacion4?.disponibleNo ? "no" : "N/A",
-      documentacion5?.nombre,
-      documentacion5?.disponibleSi ? "sí" : documentacion5?.disponibleNo ? "no" : "N/A",
-      documentacion6?.nombre,
-      documentacion6?.disponibleSi ? "sí" : documentacion6?.disponibleNo ? "no" : "N/A",
-      documentacion7?.nombre,
-      documentacion7?.disponibleSi ? "sí" : documentacion7?.disponibleNo ? "no" : "N/A",
-      documentacion8?.nombre,
-      documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A",
-      "",
-      "Daño 1", danosCarroceria1?.vista, danosCarroceria1?.rayones ? "X" : "no", danosCarroceria1?.golpes ? "/" : "no", 
-      danosCarroceria1?.quebrado ? "O" : "no", danosCarroceria1?.faltante ? "*" : "no",
-      "Daño 2", danosCarroceria2?.vista, danosCarroceria2?.rayones ? "X" : "no", danosCarroceria2?.golpes ? "/" : "no", 
-      danosCarroceria2?.quebrado ? "O" : "no", danosCarroceria2?.faltante ? "*" : "no",
-      "Daño 3", danosCarroceria3?.vista, danosCarroceria3?.rayones ? "X" : "no", danosCarroceria3?.golpes ? "/" : "no", 
-      danosCarroceria3?.quebrado ? "O" : "no", danosCarroceria3?.faltante ? "*" : "no",
-      "Daño 4", danosCarroceria4?.vista, danosCarroceria4?.rayones ? "X" : "no", danosCarroceria4?.golpes ? "/" : "no", 
-      danosCarroceria4?.quebrado ? "O" : "no", danosCarroceria4?.faltante ? "*" : "no"
-    ];
-
-    // Combinar todos los valores
-    return [addTiresData(baseValues).concat(restOfValues)];
   }
 }
