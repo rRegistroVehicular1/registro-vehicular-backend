@@ -77,20 +77,15 @@ export class InsRegistroSalidaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     
     try {
-      // 1. Primero obtener la cantidad de llantas para esta placa
+      // 1. Obtener la cantidad de llantas para esta placa
       const llantasPorPlaca = await this.placasService.getLlantasPorPlaca();
       const cantidadLlantas = llantasPorPlaca[placa] || 4;
-      console.log('Cantidad de llantas para placa', placa, ':', cantidadLlantas);
 
-      // 2. Validar que las llantas enviadas coincidan con la cantidad esperada
-      const idsLlantasEnviadas = llantas.map(llanta => llanta.id);
-      const idsEsperados = this.getIdsLlantasEsperados(cantidadLlantas);
+      // 2. Validar y normalizar datos de llantas
+      this.validateTires(cantidadLlantas, llantas);
+      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
       
-      const llantasInvalidas = idsLlantasEnviadas.filter(id => !idsEsperados.includes(id));
-      if (llantasInvalidas.length > 0) {
-        throw new Error(`La placa ${placa} requiere ${cantidadLlantas} llantas (IDs esperados: ${idsEsperados.join(', ')})`);
-      }
-      
+      // 3. Procesar otros datos
       const fechaHoraActual = new Intl.DateTimeFormat('es-ES', {
         timeZone: 'America/Panama',
         year: 'numeric',
@@ -110,8 +105,6 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
-      // Normalizar datos de llantas según cantidad
-      llantas = this.normalizeTiresData(this.processJSON(llantas), cantidadLlantas);
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
@@ -119,6 +112,7 @@ export class InsRegistroSalidaService {
       documentacion = this.processJSON(documentacion);
       danosCarroceria = this.processJSON(danosCarroceria);
 
+      // 4. Construir arrays y valores
       const arrays = this.initializeArrays({
         llantas,
         cantidadLlantas,
@@ -139,12 +133,12 @@ export class InsRegistroSalidaService {
         odometroSalida,
         estadoSalida,
         observacionGeneralLlantas,
-        fluidos,
         observacionGeneralFluido,
         observacionGeneralVisuales,
         ...arrays,
       });
 
+      // 5. Insertar datos en Google Sheets
       const response = await this.sheets.spreadsheets.values.append({
         auth: this.auth,
         spreadsheetId,
@@ -158,6 +152,7 @@ export class InsRegistroSalidaService {
       const updatedRange = response.data.updates.updatedRange;
       const filaInsertada = parseInt(updatedRange.match(/\d+/g).pop(), 10);
 
+      // 6. Actualizar hora de salida
       await this.sheets.spreadsheets.values.update({
         auth: this.auth,
         spreadsheetId,
@@ -168,17 +163,17 @@ export class InsRegistroSalidaService {
         },
       });
 
+      // 7. Registrar salida
       await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
 
       console.log('Datos enviados correctamente a Google Sheets.');
       return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
     } catch (error) {
       console.error('Error al procesar datos:', error.response?.data || error.message || error);
-      throw new Error(`Error al procesar datos: ${error.message}. Por favor, verifica la placa e intenta nuevamente.`);
+      throw new Error(`Error al procesar datos: ${error.message}`);
     }
   }
 
-  // Método auxiliar para obtener IDs esperados
   private getIdsLlantasEsperados(cantidad: number): number[] {
     switch(cantidad) {
       case 4: return [1, 2, 5, 7];
@@ -210,24 +205,14 @@ export class InsRegistroSalidaService {
     documentacion,
     danosCarroceria,
   }: any) {
-    // Inicializar todas las llantas posibles
-    /*const llantasMap = {};
+    // Inicializar todas las llantas posibles (1-10)
+    const llantasMap = {};
     for (let i = 1; i <= 10; i++) {
       llantasMap[`llanta${i}`] = llantas[i - 1] || null;
-    }*/
+    }
 
     return {
-      //...llantasMap,
-      llanta1: llantas[0],
-      llanta2: llantas[1],
-      llanta3: llantas[2],
-      llanta4: llantas[3],
-      llanta5: llantas[4],
-      llanta6: llantas[5],
-      llanta7: llantas[6],
-      llanta8: llantas[7],
-      llanta9: llantas[8],
-      llanta10: llantas[9],
+      ...llantasMap,
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
@@ -292,18 +277,17 @@ export class InsRegistroSalidaService {
       danosCarroceria1, danosCarroceria2, danosCarroceria3, danosCarroceria4,
     } = arrays;
     
+    // Construir array de valores para las llantas (siempre 10 llantas)
     const llantasValues = [];
     for (let i = 1; i <= 10; i++) {
       const llanta = arrays[`llanta${i}`];
-      if (llanta) {
-        llantasValues.push(
-          `llanta ${i}`,
-          llanta?.fp ? "√" : " ",
-          llanta?.pe ? "√" : "",
-          llanta?.pa ? "√" : "",
-          llanta?.desgaste ? "x" : ""
-        );
-      }
+      llantasValues.push(
+        `llanta ${i}`,
+        llanta?.fp ? "√" : "",
+        llanta?.pe ? "√" : "",
+        llanta?.pa ? "√" : "",
+        llanta?.desgaste ? "x" : ""
+      );
     }
 
     return [
@@ -315,7 +299,7 @@ export class InsRegistroSalidaService {
         tipoVehiculo,
         odometroSalida,
         estadoSalida,
-        ...llantasValues,
+        ...llantasValues, // Esto ocupará exactamente 50 columnas (10 llantas * 5 campos)
         observacionGeneralLlantas,
         "Nivel 1", fluido1?.nombre, fluido1?.requiere ? "√" : "", fluido1?.lleno ? "√" : "",
         "Nivel 2", fluido2?.nombre, fluido2?.requiere ? "√" : "", fluido2?.lleno ? "√" : "",
@@ -380,19 +364,29 @@ export class InsRegistroSalidaService {
         documentacion8?.nombre,
         documentacion8?.disponibleSi ? "sí" : documentacion8?.disponibleNo ? "no" : "N/A",
         "",
-        "Daño 1", danosCarroceria1?.vista, danosCarroceria1?.rayones ? "X" : "no", 
-        danosCarroceria1?.golpes ? "/" : "no", danosCarroceria1?.quebrado ? "O" : "no",
-        danosCarroceria1?.faltante ? "*" : "no",
-        "Daño 2", danosCarroceria2?.vista, danosCarroceria2?.rayones ? "X" : "no", 
-        danosCarroceria2?.golpes ? "/" : "no", danosCarroceria2?.quebrado ? "0" : "no",
-        danosCarroceria2?.faltante ? "*" : "no",
-        "Daño 3", danosCarroceria3?.vista, danosCarroceria3?.rayones ? "X" : "no", 
-        danosCarroceria3?.golpes ? "/" : "no", danosCarroceria3?.quebrado ? "0" : "no",
-        danosCarroceria3?.faltante ? "*" : "no",
-        "Daño 4", danosCarroceria4?.vista, danosCarroceria4?.rayones ? "X" : "no", 
-        danosCarroceria4?.golpes ? "/" : "no", danosCarroceria4?.quebrado ? "0" : "no",
-        danosCarroceria4?.faltante ? "*" : "no"
+        "Daño 1", danosCarroceria1?.vista, danosCarroceria1?.rayones ? "X" : "", 
+        danosCarroceria1?.golpes ? "/" : "", danosCarroceria1?.quebrado ? "O" : "",
+        danosCarroceria1?.faltante ? "*" : "",
+        "Daño 2", danosCarroceria2?.vista, danosCarroceria2?.rayones ? "X" : "", 
+        danosCarroceria2?.golpes ? "/" : "", danosCarroceria2?.quebrado ? "O" : "",
+        danosCarroceria2?.faltante ? "*" : "",
+        "Daño 3", danosCarroceria3?.vista, danosCarroceria3?.rayones ? "X" : "", 
+        danosCarroceria3?.golpes ? "/" : "", danosCarroceria3?.quebrado ? "O" : "",
+        danosCarroceria3?.faltante ? "*" : "",
+        "Daño 4", danosCarroceria4?.vista, danosCarroceria4?.rayones ? "X" : "", 
+        danosCarroceria4?.golpes ? "/" : "", danosCarroceria4?.quebrado ? "O" : "",
+        danosCarroceria4?.faltante ? "*" : ""
       ],
     ];
+  }
+
+  private getColumnLetter(column: number): string {
+    let temp, letter = '';
+    while (column > 0) {
+      temp = (column - 1) % 26;
+      letter = String.fromCharCode(temp + 65) + letter;
+      column = (column - temp - 1) / 26;
+    }
+    return letter;
   }
 }
