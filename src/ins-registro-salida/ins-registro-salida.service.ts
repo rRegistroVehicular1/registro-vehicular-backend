@@ -39,8 +39,8 @@ export class InsRegistroSalidaService {
 
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     const configuracionesPosiciones = {
-      4: { 1: 0, 2: 1, 5: 2, 7: 3 },
-      6: { 1: 0, 2: 1, 5: 2, 6: 3, 7: 4, 8: 5 },
+      4: { 1: 0, 2: 1, 5: 4, 7: 6 },
+      6: { 1: 0, 2: 1, 5: 4, 6: 5, 7: 6, 8: 7 },
       10: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9 }
     };
 
@@ -211,13 +211,23 @@ export class InsRegistroSalidaService {
     danosCarroceria,
   }: any) {
     // Inicializar todas las llantas posibles
-    const llantasMap = {};
+    /*const llantasMap = {};
     for (let i = 1; i <= 10; i++) {
       llantasMap[`llanta${i}`] = llantas[i - 1] || null;
-    }
+    }*/
 
     return {
-      ...llantasMap,
+      //...llantasMap,
+      llanta1: llantas[0],
+      llanta2: llantas[1],
+      llanta3: llantas[2],
+      llanta4: llantas[3],
+      llanta5: llantas[4],
+      llanta6: llantas[5],
+      llanta7: llantas[6],
+      llanta8: llantas[7],
+      llanta9: llantas[8],
+      llanta10: llantas[9],
       fluido1: fluidos[0],
       fluido2: fluidos[1],
       fluido3: fluidos[2],
