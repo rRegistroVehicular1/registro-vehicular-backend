@@ -80,6 +80,7 @@ export class InsRegistroSalidaService {
       // 1. Primero obtener la cantidad de llantas para esta placa
       const llantasPorPlaca = await this.placasService.getLlantasPorPlaca();
       const cantidadLlantas = llantasPorPlaca[placa] || 4;
+      console.log('Cantidad de llantas para placa', placa, ':', cantidadLlantas);
 
       // 2. Validar que las llantas enviadas coincidan con la cantidad esperada
       const idsLlantasEnviadas = llantas.map(llanta => llanta.id);
@@ -173,7 +174,7 @@ export class InsRegistroSalidaService {
       return { message: 'Datos procesados y almacenados correctamente en Google Sheets' };
     } catch (error) {
       console.error('Error al procesar datos:', error.response?.data || error.message || error);
-      throw new Error(`Error al procesar datos: ${error.message}`);
+      throw new Error(`Error al procesar datos: ${error.message}. Por favor, verifica la placa e intenta nuevamente.`);
     }
   }
 
