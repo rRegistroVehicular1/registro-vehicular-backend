@@ -78,8 +78,7 @@ export class InsRegistroSalidaService {
     
     try {
       // 1. Primero obtener la cantidad de llantas para esta placa
-      //const placasService = this.appService['placasService'];
-      const llantasPorPlaca = await placasService.getLlantasPorPlaca();
+      const llantasPorPlaca = await this.placasService.getLlantasPorPlaca();
       const cantidadLlantas = llantasPorPlaca[placa] || 4;
 
       // 2. Validar que las llantas enviadas coincidan con la cantidad esperada
