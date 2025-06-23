@@ -39,8 +39,8 @@ export class InsRegistroSalidaService {
 
   private normalizeTiresData(llantas: any[], cantidadLlantas: number): any[] {
     const configuracionesPosiciones = {
-      4: { 1: 0, 2: 1, 5: 2, 7: 3 },
-      6: { 1: 0, 2: 1, 5: 2, 6: 3, 7: 4, 8: 5 },
+      4: { 1: 0, 2: 1, 5: 4, 7: 6 },
+      6: { 1: 0, 2: 1, 5: 4, 6: 5, 7: 6, 8: 7 },
       10: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9 }
     };
 
