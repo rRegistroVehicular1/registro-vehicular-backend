@@ -19,27 +19,26 @@ export class HomeService {
     message: string;
     lastTimestamp?: string;
     estado?: string;
-    datoColumnaG?: string;
     rowIndex?: number;
   }> {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     const range = 'Hoja 1!A2:H';
-
+  
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId,
         range,
       });
-
+  
       const rows = response.data.values;
-
       if (!rows || rows.length === 0) {
         return { message: 'No hay registros en la hoja.' };
       }
-
+  
       const normalizedPlaca = placa.trim().toUpperCase();
-
-      const matchingRows = rows
+  
+      // Buscar todos los registros de la placa ordenados por fecha descendente
+      const registrosPlaca = rows
         .map((row, index) => {
           const rawTimestamp = row[0]?.trim();
           const correctedTimestamp = rawTimestamp.replace(
@@ -47,47 +46,46 @@ export class HomeService {
             '$3-$2-$1T$4'
           );
           const timestamp = new Date(correctedTimestamp);
-
+  
           return {
             timestamp,
             plate: row[1]?.trim().toUpperCase(),
-            estado: row[6]?.trim(),
-            datoColumnaG: row[6]?.trim(),
+            estado: row[6]?.trim(), // Columna G (estado: salida/entrada)
             rowIndex: index + 2,
           };
         })
-        .filter((record) => {
-          return record.plate === normalizedPlaca && !isNaN(record.timestamp.getTime());
-        })
+        .filter(record => record.plate === normalizedPlaca && !isNaN(record.timestamp.getTime()))
         .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-
-      if (matchingRows.length === 0) {
-        return { message: `La placa ${placa} no está registrada.` };
+  
+      if (registrosPlaca.length === 0) {
+        return { 
+          message: `La placa ${placa} no está registrada.`,
+          estado: 'nueva' // Estado personalizado para placas nuevas
+        };
       }
-
-      const lastRecord = matchingRows[0];
-
-
-
-
-
-
-
-
-      if (lastRecord.datoColumnaG === "entrada") {
-        return { message: `La ${placa} ha ingresado a la plataforma.` };
+  
+      const ultimoRegistro = registrosPlaca[0];
+      
+      // Si el último registro es una salida, debe hacer entrada
+      if (ultimoRegistro.estado === 'salida') {
+        return {
+          message: `La placa ${placa} tiene una salida registrada. Proceder con entrada.`,
+          estado: 'entrada',
+          rowIndex: ultimoRegistro.rowIndex,
+          lastTimestamp: ultimoRegistro.timestamp.toISOString()
+        };
       }
-
+      
+      // Si el último registro es una entrada, debe hacer salida
       return {
-        message: `La placa ${placa} está registrada.`,
-        lastTimestamp: lastRecord.timestamp.toISOString(),
-        estado: lastRecord.estado || 'No especificado',
-        datoColumnaG: lastRecord.datoColumnaG || 'Dato no disponible',
-        rowIndex: lastRecord.rowIndex,
+        message: `La placa ${placa} tiene una entrada registrada. Proceder con salida.`,
+        estado: 'salida',
+        rowIndex: ultimoRegistro.rowIndex,
+        lastTimestamp: ultimoRegistro.timestamp.toISOString()
       };
-
+  
     } catch (error) {
-      console.error('Error al consultar la placa en Google Sheets:', error.response?.data || error.message || error);
+      console.error('Error al consultar la placa:', error);
       throw new Error('Error al consultar la placa en Google Sheets');
     }
   }
