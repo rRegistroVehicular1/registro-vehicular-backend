@@ -163,6 +163,18 @@ export class InsRegistroSalidaService {
         },
       });
 
+      // Asegurar que el estado sea "salida"
+      const columnGRange = `Hoja 1!G${filaInsertada}:G${filaInsertada}`;
+      await this.sheets.spreadsheets.values.update({
+        auth: this.auth,
+        spreadsheetId,
+        range: columnGRange,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [['salida']],
+        },
+      });
+
       // 7. Registrar salida
       await this.salidasService.handleDataSalida(placa, conductor, fechaHoraActual, sucursal, HoraSalida);
 
