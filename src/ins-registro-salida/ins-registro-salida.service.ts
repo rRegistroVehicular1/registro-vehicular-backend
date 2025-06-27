@@ -77,17 +77,6 @@ export class InsRegistroSalidaService {
     const spreadsheetId = process.env.GOOGLE_INSPECCIONSALIDAS;
     
     try {
-
-      if (!conductor || conductor.trim() === '') {
-          throw new Error('El nombre del conductor es requerido');
-      }
-  
-      // Procesar el conductor (eliminar espacios extras, etc.)
-      conductor = conductor.trim().toUpperCase();
-  
-      // Resto del código de manejo de datos...
-      console.log(`Conductor registrado: ${conductor}`); // Para depuración
-      
       // 1. Obtener la cantidad de llantas para esta placa
       const llantasPorPlaca = await this.placasService.getLlantasPorPlaca();
       const cantidadLlantas = llantasPorPlaca[placa] || 4;
