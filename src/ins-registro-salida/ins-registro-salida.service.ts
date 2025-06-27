@@ -105,6 +105,8 @@ export class InsRegistroSalidaService {
         hour12: false,
       }).format(new Date());
 
+      conductor = conductor.toUpperCase();
+
       fluidos = this.processJSON(fluidos);
       parametrosVisuales = this.processJSON(parametrosVisuales);
       luces = this.processJSON(luces);
