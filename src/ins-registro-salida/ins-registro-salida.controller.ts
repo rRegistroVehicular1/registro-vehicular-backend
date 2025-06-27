@@ -32,13 +32,6 @@ export class InsRegistroSalidaController {
     } = body;
 
     const estadoSalida = "salida";
-
-    // Procesamiento seguro del conductor
-    let conductorFinal = conductor;
-    if (typeof conductor === 'object') {
-      // Si es un objeto (puede ser del campo personalizado), extraemos el valor
-      conductorFinal = conductor.value || conductor.nombre || '';
-    }
     
     // Procesamiento seguro de llantas
     let llantasArray: any[] = [];
@@ -66,7 +59,7 @@ export class InsRegistroSalidaController {
 
     const result = await this.InsRegistroSalidaService.handleData(
       placa,
-      conductorFinal,
+      conductor,
       sucursal,
       tipoVehiculo,
       odometroSalida,
