@@ -36,7 +36,11 @@ export class FallaService {
         placa: string,
         detalles: string
     ) {
+
+        await this.addConductorIfNew(conductor);
+          
         const spreadsheetId = process.env.GOOGLE_FALLAS;
+            
 
         try {
 
@@ -90,6 +94,38 @@ export class FallaService {
 
         return paragraphs;
     }
+
+    async addConductorIfNew(conductor: string) {
+          const spreadsheetId = process.env.GOOGLE_SPREADSHEETIDPLACAS;
+          const sheetName = 'Lista de Conductores';
+          const range = `${sheetName}!B2:B`;
+      
+          try {
+              // Primero verificar si el conductor ya existe
+              const response = await this.sheets.spreadsheets.values.get({
+                  spreadsheetId,
+                  range,
+              });
+      
+              const conductores = response.data.values?.flat() || [];
+              const conductorExists = conductores.some(c => c.trim().toLowerCase() === conductor.trim().toLowerCase());
+      
+              if (!conductorExists) {
+                  // Agregar el nuevo conductor
+                  await this.sheets.spreadsheets.values.append({
+                      spreadsheetId,
+                      range: `${sheetName}!B1:B1`, // Añadir al final
+                      valueInputOption: 'RAW',
+                      requestBody: {
+                          values: [[conductor]],
+                      },
+                  });
+                  console.log(`Nuevo conductor agregado: ${conductor}`);
+              }
+          } catch (error) {
+              console.error('Error al verificar/agregar conductor:', error);
+          }
+      }
 
     async getRowFromSheet(rowNumber: number) {
         const spreadsheetId = process.env.GOOGLE_FALLAS;
