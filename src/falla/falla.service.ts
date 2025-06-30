@@ -171,9 +171,9 @@ export class FallaService {
 
             const requests = [
                 { range: 'Hoja 1!F7', values: [[nuevoNumero]] },
-                { range: 'Hoja 1!C7', values: [[sucursal]] },
+                { range: 'Hoja 1!C7', values: [[sucursal.toUpperCase()]] },
                 { range: 'Hoja 1!C8', values: [[fecha]] },
-                { range: 'Hoja 1!F8', values: [[conductor]] },
+                { range: 'Hoja 1!F8', values: [[conductor.toUpperCase()]] },
                 { range: 'Hoja 1!C10', values: [[vehiculo]] },
                 { range: 'Hoja 1!F10', values: [[placa]] },
                 { range: 'Hoja 1!B14', values: formattedDetails.map(paragraph => [paragraph]) },
